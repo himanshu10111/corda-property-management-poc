@@ -4,29 +4,30 @@ import co.paralleluniverse.fibers.Suspendable;
 import com.riequation.property.contracts.PropertyContract;
 import com.riequation.property.states.PropertyState;
 import net.corda.core.contracts.Command;
+import net.corda.core.contracts.StateAndRef;
 import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.flows.*;
 import net.corda.core.identity.Party;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.core.utilities.ProgressTracker;
+import com.riequation.property.states.OwnerState;
 
 import java.util.Collections;
-import java.util.UUID;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @InitiatingFlow
 @StartableByRPC
 public class AddPropertyFlow extends FlowLogic<UniqueIdentifier> {
-    private final String address;
-    private final String propertyType;
-    private final UUID ownerAccountId;
+    private final String propertyDetails;
+    private final UniqueIdentifier ownerId;
 
     private final ProgressTracker progressTracker = new ProgressTracker();
 
-    public AddPropertyFlow(String address, String propertyType, UUID ownerAccountId) {
-        this.address = address;
-        this.propertyType = propertyType;
-        this.ownerAccountId = ownerAccountId;
+    public AddPropertyFlow(String propertyDetails, UniqueIdentifier ownerId) {
+        this.propertyDetails = propertyDetails;
+        this.ownerId = ownerId;
     }
 
     @Override
@@ -37,17 +38,24 @@ public class AddPropertyFlow extends FlowLogic<UniqueIdentifier> {
     @Suspendable
     @Override
     public UniqueIdentifier call() throws FlowException {
-        // Obtain the notary from the network map cache
+        // Ensure the calling party is a registered owner
+        if (!isOwnerRegistered(ownerId)) {
+            throw new FlowException("Only registered owners can add properties.");
+        }
+
+        // Obtain the notary
         Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
 
+        // Generate a unique identifier for the property
+        UniqueIdentifier propertyLinearId = new UniqueIdentifier();
+
         // Create the output state
-        Party host = getOurIdentity(); // Node's identity
-        PropertyState outputState = new PropertyState(address, propertyType, ownerAccountId, new UniqueIdentifier(), host);
+        PropertyState outputState = new PropertyState(propertyDetails, ownerId, getOurIdentity(), propertyLinearId);
 
         // Build the transaction
         TransactionBuilder txBuilder = new TransactionBuilder(notary)
                 .addOutputState(outputState, PropertyContract.ID)
-                .addCommand(new Command<>(new PropertyContract.Commands.RegisterProperty(), host.getOwningKey()));
+                .addCommand(new Command<>(new PropertyContract.Commands.Add(), getOurIdentity().getOwningKey()));
 
         // Verify the transaction
         txBuilder.verify(getServiceHub());
@@ -55,10 +63,20 @@ public class AddPropertyFlow extends FlowLogic<UniqueIdentifier> {
         // Sign the transaction
         SignedTransaction signedTx = getServiceHub().signInitialTransaction(txBuilder);
 
-        // Finalize the transaction
+        // Finalize the transaction and return the linearId
         subFlow(new FinalityFlow(signedTx, Collections.emptyList()));
+        return propertyLinearId;
+    }
 
-        // Return the linear ID of the new property
-        return outputState.getLinearId();
+    private boolean isOwnerRegistered(UniqueIdentifier ownerId) throws FlowException {
+        // Query the vault for OwnerState with the given ownerId
+        List<StateAndRef<OwnerState>> ownerStates = getServiceHub().getVaultService()
+                .queryBy(OwnerState.class)
+                .getStates()
+                .stream()
+                .filter(stateAndRef -> stateAndRef.getState().getData().getLinearId().equals(ownerId))
+                .collect(Collectors.toList());
+
+        return !ownerStates.isEmpty();
     }
 }

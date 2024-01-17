@@ -1039,3 +1039,180 @@ Caused by: net.corda.core.flows.FlowException: An owner with the email himanshud
 [INFO ] 2024-01-16T17:01:27,300 [http-nio-8080-exec-2] DispatcherServlet - FrameworkServlet 'dispatcherServlet': initialization started
 [INFO ] 2024-01-16T17:01:27,318 [http-nio-8080-exec-2] DispatcherServlet - FrameworkServlet 'dispatcherServlet': initialization completed in 18 ms
 [WARN ] 2024-01-16T17:02:56,552 [Thread-0 (ActiveMQ-client-factory-threads-1772270518)] RPCClientProxyHandler - Terminating observables.
+[INFO ] 2024-01-17T06:36:07,780 [main] Starter - Starting Starter on Nitro_seven with PID 9732 (started by himan in E:\Corda Property Management\samples-java\Accounts\tictacthor\clients)
+[INFO ] 2024-01-17T06:36:07,786 [main] Starter - No active profile set, falling back to default profiles: default
+[INFO ] 2024-01-17T06:36:07,843 [main] AnnotationConfigServletWebServerApplicationContext - Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@2ef14fe: startup date [Wed Jan 17 12:06:07 IST 2024]; root of context hierarchy
+[INFO ] 2024-01-17T06:36:09,159 [main] TomcatWebServer - Tomcat initialized with port(s): 8080 (http)
+[INFO ] 2024-01-17T06:36:09,172 [main] Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+[INFO ] 2024-01-17T06:36:09,181 [main] StandardService - Starting service [Tomcat]
+[INFO ] 2024-01-17T06:36:09,182 [main] StandardEngine - Starting Servlet Engine: Apache Tomcat/8.5.31
+[INFO ] 2024-01-17T06:36:09,189 [localhost-startStop-1] AprLifecycleListener - The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: [C:\Program Files\Java\jdk-1.8\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Users\himan\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\PuTTY\;C:\Program Files\Docker\Docker\resources\bin;D:\chrome download\gradle-5.6.4\bin;C:\Program Files\Java\jdk-1.8\bin;C:\Program Files\Java\jdk-1.8\jre\bin;C:\Users\himan\Downloads\mongosh-2.1.1-win32-x64\bin;C:\Ruby32-x64\bin;C:\Program Files\MySQL\MySQL Shell 8.0\bin\;C:\Users\himan\AppData\Local\Microsoft\WindowsApps;C:\Users\himan\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\himan\AppData\Roaming\nvm;C:\Program Files\nodejs;D:\chrome download\gradle-5.6.4\bin;C:\Program Files\Java\jdk-1.8\bin;C:\Program Files\Java\jdk-1.8\jre\bin;C:\Program Files\heroku\bin;C:\Users\himan\Downloads\mongosh-2.1.1-win32-x64\bin;;.]
+[INFO ] 2024-01-17T06:36:09,327 [localhost-startStop-1] [/] - Initializing Spring embedded WebApplicationContext
+[INFO ] 2024-01-17T06:36:09,327 [localhost-startStop-1] ContextLoader - Root WebApplicationContext: initialization completed in 1487 ms
+[INFO ] 2024-01-17T06:36:09,574 [localhost-startStop-1] ServletRegistrationBean - Servlet dispatcherServlet mapped to [/]
+[INFO ] 2024-01-17T06:36:09,578 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'characterEncodingFilter' to: [/*]
+[INFO ] 2024-01-17T06:36:09,579 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+[INFO ] 2024-01-17T06:36:09,579 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'httpPutFormContentFilter' to: [/*]
+[INFO ] 2024-01-17T06:36:09,579 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'requestContextFilter' to: [/*]
+[INFO ] 2024-01-17T06:36:14,316 [main] RPCClient - Startup took 1306 msec
+[INFO ] 2024-01-17T06:36:14,803 [main] SimpleUrlHandlerMapping - Mapped URL path [/**/favicon.ico] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T06:36:14,918 [main] RequestMappingHandlerAdapter - Looking for @ControllerAdvice: org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@2ef14fe: startup date [Wed Jan 17 12:06:07 IST 2024]; root of context hierarchy
+[INFO ] 2024-01-17T06:36:14,993 [main] RequestMappingHandlerMapping - Mapped "{[/add-property],methods=[POST],consumes=[application/json],produces=[application/json]}" onto public org.springframework.http.ResponseEntity<java.lang.String> com.riequation.property.webserver.Controller.addProperty(java.util.HashMap<java.lang.String, java.lang.String>)
+[INFO ] 2024-01-17T06:36:14,993 [main] RequestMappingHandlerMapping - Mapped "{[/properties/{ownerAccountId}],methods=[GET],produces=[application/json]}" onto public org.springframework.http.ResponseEntity<?> com.riequation.property.webserver.Controller.getPropertyListByOwner(java.lang.String)
+[INFO ] 2024-01-17T06:36:14,995 [main] RequestMappingHandlerMapping - Mapped "{[/create-owner],methods=[POST],consumes=[application/json],produces=[application/json]}" onto private org.springframework.http.ResponseEntity<java.lang.String> com.riequation.property.webserver.Controller.createOwner(java.util.HashMap<java.lang.String, java.lang.String>)
+[INFO ] 2024-01-17T06:36:14,995 [main] RequestMappingHandlerMapping - Mapped "{[/properties],methods=[GET],produces=[application/json]}" onto public org.springframework.http.ResponseEntity<?> com.riequation.property.webserver.Controller.getAllProperties()
+[INFO ] 2024-01-17T06:36:14,995 [main] RequestMappingHandlerMapping - Mapped "{[/owners],methods=[GET],produces=[application/json]}" onto public org.springframework.http.ResponseEntity<java.util.List<com.riequation.property.states.OwnerState>> com.riequation.property.webserver.Controller.getAllOwners()
+[INFO ] 2024-01-17T06:36:14,996 [main] RequestMappingHandlerMapping - Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+[INFO ] 2024-01-17T06:36:14,997 [main] RequestMappingHandlerMapping - Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+[INFO ] 2024-01-17T06:36:15,021 [main] SimpleUrlHandlerMapping - Mapped URL path [/webjars/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T06:36:15,021 [main] SimpleUrlHandlerMapping - Mapped URL path [/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T06:36:15,071 [main] WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+[INFO ] 2024-01-17T06:36:15,210 [main] AnnotationMBeanExporter - Registering beans for JMX exposure on startup
+[INFO ] 2024-01-17T06:36:15,224 [main] Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+[INFO ] 2024-01-17T06:36:15,225 [main] NioSelectorPool - Using a shared selector for servlet write/read
+[INFO ] 2024-01-17T06:36:15,243 [main] TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path ''
+[INFO ] 2024-01-17T06:36:15,246 [main] Starter - Started Starter in 8.23 seconds (JVM running for 9.049)
+[INFO ] 2024-01-17T06:36:25,931 [http-nio-8080-exec-1] [/] - Initializing Spring FrameworkServlet 'dispatcherServlet'
+[INFO ] 2024-01-17T06:36:25,931 [http-nio-8080-exec-1] DispatcherServlet - FrameworkServlet 'dispatcherServlet': initialization started
+[INFO ] 2024-01-17T06:36:25,949 [http-nio-8080-exec-1] DispatcherServlet - FrameworkServlet 'dispatcherServlet': initialization completed in 17 ms
+[WARN ] 2024-01-17T06:58:29,245 [Thread-4 (ActiveMQ-client-factory-threads-389519344)] RPCClientProxyHandler - Terminating observables.
+[INFO ] 2024-01-17T07:25:57,226 [main] Starter - Starting Starter on Nitro_seven with PID 1572 (started by himan in E:\Corda Property Management\samples-java\Accounts\tictacthor\clients)
+[INFO ] 2024-01-17T07:25:57,235 [main] Starter - No active profile set, falling back to default profiles: default
+[INFO ] 2024-01-17T07:25:57,278 [main] AnnotationConfigServletWebServerApplicationContext - Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@2ef14fe: startup date [Wed Jan 17 12:55:57 IST 2024]; root of context hierarchy
+[INFO ] 2024-01-17T07:25:58,562 [main] TomcatWebServer - Tomcat initialized with port(s): 8080 (http)
+[INFO ] 2024-01-17T07:25:58,575 [main] Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+[INFO ] 2024-01-17T07:25:58,584 [main] StandardService - Starting service [Tomcat]
+[INFO ] 2024-01-17T07:25:58,584 [main] StandardEngine - Starting Servlet Engine: Apache Tomcat/8.5.31
+[INFO ] 2024-01-17T07:25:58,592 [localhost-startStop-1] AprLifecycleListener - The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: [C:\Program Files\Java\jdk-1.8\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Users\himan\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\PuTTY\;C:\Program Files\Docker\Docker\resources\bin;D:\chrome download\gradle-5.6.4\bin;C:\Program Files\Java\jdk-1.8\bin;C:\Program Files\Java\jdk-1.8\jre\bin;C:\Users\himan\Downloads\mongosh-2.1.1-win32-x64\bin;C:\Ruby32-x64\bin;C:\Program Files\MySQL\MySQL Shell 8.0\bin\;C:\Users\himan\AppData\Local\Microsoft\WindowsApps;C:\Users\himan\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\himan\AppData\Roaming\nvm;C:\Program Files\nodejs;D:\chrome download\gradle-5.6.4\bin;C:\Program Files\Java\jdk-1.8\bin;C:\Program Files\Java\jdk-1.8\jre\bin;C:\Program Files\heroku\bin;C:\Users\himan\Downloads\mongosh-2.1.1-win32-x64\bin;;.]
+[INFO ] 2024-01-17T07:25:58,725 [localhost-startStop-1] [/] - Initializing Spring embedded WebApplicationContext
+[INFO ] 2024-01-17T07:25:58,725 [localhost-startStop-1] ContextLoader - Root WebApplicationContext: initialization completed in 1450 ms
+[INFO ] 2024-01-17T07:25:58,844 [localhost-startStop-1] ServletRegistrationBean - Servlet dispatcherServlet mapped to [/]
+[INFO ] 2024-01-17T07:25:58,849 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'characterEncodingFilter' to: [/*]
+[INFO ] 2024-01-17T07:25:58,849 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+[INFO ] 2024-01-17T07:25:58,849 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'httpPutFormContentFilter' to: [/*]
+[INFO ] 2024-01-17T07:25:58,850 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'requestContextFilter' to: [/*]
+[INFO ] 2024-01-17T07:26:03,676 [main] RPCClient - Startup took 1401 msec
+[INFO ] 2024-01-17T07:26:04,152 [main] SimpleUrlHandlerMapping - Mapped URL path [/**/favicon.ico] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T07:26:04,271 [main] RequestMappingHandlerAdapter - Looking for @ControllerAdvice: org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@2ef14fe: startup date [Wed Jan 17 12:55:57 IST 2024]; root of context hierarchy
+[INFO ] 2024-01-17T07:26:04,341 [main] RequestMappingHandlerMapping - Mapped "{[/add-property],methods=[POST],consumes=[application/json],produces=[application/json]}" onto private org.springframework.http.ResponseEntity<java.lang.String> com.riequation.property.webserver.Controller.addProperty(java.util.HashMap<java.lang.String, java.lang.String>)
+[INFO ] 2024-01-17T07:26:04,342 [main] RequestMappingHandlerMapping - Mapped "{[/owners],methods=[GET],produces=[application/json]}" onto public org.springframework.http.ResponseEntity<java.util.List<com.riequation.property.states.OwnerState>> com.riequation.property.webserver.Controller.getAllOwners()
+[INFO ] 2024-01-17T07:26:04,343 [main] RequestMappingHandlerMapping - Mapped "{[/create-owner],methods=[POST],consumes=[application/json],produces=[application/json]}" onto private org.springframework.http.ResponseEntity<java.lang.String> com.riequation.property.webserver.Controller.createOwner(java.util.HashMap<java.lang.String, java.lang.String>)
+[INFO ] 2024-01-17T07:26:04,346 [main] RequestMappingHandlerMapping - Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+[INFO ] 2024-01-17T07:26:04,347 [main] RequestMappingHandlerMapping - Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+[INFO ] 2024-01-17T07:26:04,370 [main] SimpleUrlHandlerMapping - Mapped URL path [/webjars/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T07:26:04,370 [main] SimpleUrlHandlerMapping - Mapped URL path [/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T07:26:04,410 [main] WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+[INFO ] 2024-01-17T07:26:04,525 [main] AnnotationMBeanExporter - Registering beans for JMX exposure on startup
+[INFO ] 2024-01-17T07:26:04,537 [main] Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+[INFO ] 2024-01-17T07:26:04,539 [main] NioSelectorPool - Using a shared selector for servlet write/read
+[INFO ] 2024-01-17T07:26:04,558 [main] TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path ''
+[INFO ] 2024-01-17T07:26:04,561 [main] Starter - Started Starter in 8.055 seconds (JVM running for 8.854)
+[INFO ] 2024-01-17T07:26:37,573 [http-nio-8080-exec-1] [/] - Initializing Spring FrameworkServlet 'dispatcherServlet'
+[INFO ] 2024-01-17T07:26:37,574 [http-nio-8080-exec-1] DispatcherServlet - FrameworkServlet 'dispatcherServlet': initialization started
+[INFO ] 2024-01-17T07:26:37,589 [http-nio-8080-exec-1] DispatcherServlet - FrameworkServlet 'dispatcherServlet': initialization completed in 15 ms
+[WARN ] 2024-01-17T07:31:24,133 [Thread-3 (ActiveMQ-client-factory-threads-603184112)] RPCClientProxyHandler - Terminating observables.
+[INFO ] 2024-01-17T08:44:34,224 [main] Starter - Starting Starter on Nitro_seven with PID 8816 (started by himan in E:\Corda Property Management\samples-java\Accounts\tictacthor\clients)
+[INFO ] 2024-01-17T08:44:34,246 [main] Starter - No active profile set, falling back to default profiles: default
+[INFO ] 2024-01-17T08:44:34,416 [main] AnnotationConfigServletWebServerApplicationContext - Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@29526c05: startup date [Wed Jan 17 14:14:34 IST 2024]; root of context hierarchy
+[INFO ] 2024-01-17T08:44:36,485 [main] TomcatWebServer - Tomcat initialized with port(s): 8080 (http)
+[INFO ] 2024-01-17T08:44:36,499 [main] Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+[INFO ] 2024-01-17T08:44:36,508 [main] StandardService - Starting service [Tomcat]
+[INFO ] 2024-01-17T08:44:36,508 [main] StandardEngine - Starting Servlet Engine: Apache Tomcat/8.5.31
+[INFO ] 2024-01-17T08:44:36,517 [localhost-startStop-1] AprLifecycleListener - The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: [C:\Program Files\Java\jdk-1.8\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Users\himan\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\PuTTY\;C:\Program Files\Docker\Docker\resources\bin;D:\chrome download\gradle-5.6.4\bin;C:\Program Files\Java\jdk-1.8\bin;C:\Program Files\Java\jdk-1.8\jre\bin;C:\Users\himan\Downloads\mongosh-2.1.1-win32-x64\bin;C:\Ruby32-x64\bin;C:\Program Files\MySQL\MySQL Shell 8.0\bin\;C:\Users\himan\AppData\Local\Microsoft\WindowsApps;C:\Users\himan\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\himan\AppData\Roaming\nvm;C:\Program Files\nodejs;D:\chrome download\gradle-5.6.4\bin;C:\Program Files\Java\jdk-1.8\bin;C:\Program Files\Java\jdk-1.8\jre\bin;C:\Program Files\heroku\bin;C:\Users\himan\Downloads\mongosh-2.1.1-win32-x64\bin;;.]
+[INFO ] 2024-01-17T08:44:36,653 [localhost-startStop-1] [/] - Initializing Spring embedded WebApplicationContext
+[INFO ] 2024-01-17T08:44:36,654 [localhost-startStop-1] ContextLoader - Root WebApplicationContext: initialization completed in 2248 ms
+[INFO ] 2024-01-17T08:44:36,794 [localhost-startStop-1] ServletRegistrationBean - Servlet dispatcherServlet mapped to [/]
+[INFO ] 2024-01-17T08:44:36,799 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'characterEncodingFilter' to: [/*]
+[INFO ] 2024-01-17T08:44:36,800 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+[INFO ] 2024-01-17T08:44:36,800 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'httpPutFormContentFilter' to: [/*]
+[INFO ] 2024-01-17T08:44:36,800 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'requestContextFilter' to: [/*]
+[INFO ] 2024-01-17T08:44:42,396 [main] RPCClient - Startup took 1319 msec
+[INFO ] 2024-01-17T08:44:43,041 [main] SimpleUrlHandlerMapping - Mapped URL path [/**/favicon.ico] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T08:44:43,171 [main] RequestMappingHandlerAdapter - Looking for @ControllerAdvice: org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@29526c05: startup date [Wed Jan 17 14:14:34 IST 2024]; root of context hierarchy
+[INFO ] 2024-01-17T08:44:43,261 [main] RequestMappingHandlerMapping - Mapped "{[/add-property],methods=[POST],consumes=[application/json],produces=[application/json]}" onto private org.springframework.http.ResponseEntity<java.lang.String> com.riequation.property.webserver.Controller.addProperty(java.util.HashMap<java.lang.String, java.lang.String>)
+[INFO ] 2024-01-17T08:44:43,262 [main] RequestMappingHandlerMapping - Mapped "{[/owners],methods=[GET],produces=[application/json]}" onto public org.springframework.http.ResponseEntity<java.util.List<com.riequation.property.states.OwnerState>> com.riequation.property.webserver.Controller.getAllOwners()
+[INFO ] 2024-01-17T08:44:43,263 [main] RequestMappingHandlerMapping - Mapped "{[/create-owner],methods=[POST],consumes=[application/json],produces=[application/json]}" onto private org.springframework.http.ResponseEntity<java.lang.String> com.riequation.property.webserver.Controller.createOwner(java.util.HashMap<java.lang.String, java.lang.String>)
+[INFO ] 2024-01-17T08:44:43,265 [main] RequestMappingHandlerMapping - Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+[INFO ] 2024-01-17T08:44:43,265 [main] RequestMappingHandlerMapping - Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+[INFO ] 2024-01-17T08:44:43,287 [main] SimpleUrlHandlerMapping - Mapped URL path [/webjars/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T08:44:43,288 [main] SimpleUrlHandlerMapping - Mapped URL path [/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T08:44:43,341 [main] WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+[INFO ] 2024-01-17T08:44:43,516 [main] AnnotationMBeanExporter - Registering beans for JMX exposure on startup
+[INFO ] 2024-01-17T08:44:43,533 [main] Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+[INFO ] 2024-01-17T08:44:43,535 [main] NioSelectorPool - Using a shared selector for servlet write/read
+[INFO ] 2024-01-17T08:44:43,558 [main] TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path ''
+[INFO ] 2024-01-17T08:44:43,563 [main] Starter - Started Starter in 11.366 seconds (JVM running for 12.558)
+[INFO ] 2024-01-17T08:45:23,549 [http-nio-8080-exec-2] [/] - Initializing Spring FrameworkServlet 'dispatcherServlet'
+[INFO ] 2024-01-17T08:45:23,549 [http-nio-8080-exec-2] DispatcherServlet - FrameworkServlet 'dispatcherServlet': initialization started
+[INFO ] 2024-01-17T08:45:23,566 [http-nio-8080-exec-2] DispatcherServlet - FrameworkServlet 'dispatcherServlet': initialization completed in 17 ms
+[WARN ] 2024-01-17T08:45:50,517 [Thread-0 (ActiveMQ-client-factory-threads-1911600942)] RPCClientProxyHandler - Terminating observables.
+[INFO ] 2024-01-17T08:49:52,114 [main] Starter - Starting Starter on Nitro_seven with PID 14832 (started by himan in E:\Corda Property Management\samples-java\Accounts\tictacthor\clients)
+[INFO ] 2024-01-17T08:49:52,124 [main] Starter - No active profile set, falling back to default profiles: default
+[INFO ] 2024-01-17T08:49:52,209 [main] AnnotationConfigServletWebServerApplicationContext - Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@2ef14fe: startup date [Wed Jan 17 14:19:52 IST 2024]; root of context hierarchy
+[INFO ] 2024-01-17T08:49:53,798 [main] TomcatWebServer - Tomcat initialized with port(s): 8080 (http)
+[INFO ] 2024-01-17T08:49:53,815 [main] Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+[INFO ] 2024-01-17T08:49:53,826 [main] StandardService - Starting service [Tomcat]
+[INFO ] 2024-01-17T08:49:53,826 [main] StandardEngine - Starting Servlet Engine: Apache Tomcat/8.5.31
+[INFO ] 2024-01-17T08:49:53,834 [localhost-startStop-1] AprLifecycleListener - The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: [C:\Program Files\Java\jdk-1.8\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Users\himan\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\PuTTY\;C:\Program Files\Docker\Docker\resources\bin;D:\chrome download\gradle-5.6.4\bin;C:\Program Files\Java\jdk-1.8\bin;C:\Program Files\Java\jdk-1.8\jre\bin;C:\Users\himan\Downloads\mongosh-2.1.1-win32-x64\bin;C:\Ruby32-x64\bin;C:\Program Files\MySQL\MySQL Shell 8.0\bin\;C:\Users\himan\AppData\Local\Microsoft\WindowsApps;C:\Users\himan\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\himan\AppData\Roaming\nvm;C:\Program Files\nodejs;D:\chrome download\gradle-5.6.4\bin;C:\Program Files\Java\jdk-1.8\bin;C:\Program Files\Java\jdk-1.8\jre\bin;C:\Program Files\heroku\bin;C:\Users\himan\Downloads\mongosh-2.1.1-win32-x64\bin;;.]
+[INFO ] 2024-01-17T08:49:53,979 [localhost-startStop-1] [/] - Initializing Spring embedded WebApplicationContext
+[INFO ] 2024-01-17T08:49:53,979 [localhost-startStop-1] ContextLoader - Root WebApplicationContext: initialization completed in 1775 ms
+[INFO ] 2024-01-17T08:49:54,117 [localhost-startStop-1] ServletRegistrationBean - Servlet dispatcherServlet mapped to [/]
+[INFO ] 2024-01-17T08:49:54,123 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'characterEncodingFilter' to: [/*]
+[INFO ] 2024-01-17T08:49:54,124 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+[INFO ] 2024-01-17T08:49:54,124 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'httpPutFormContentFilter' to: [/*]
+[INFO ] 2024-01-17T08:49:54,124 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'requestContextFilter' to: [/*]
+[INFO ] 2024-01-17T08:49:59,379 [main] RPCClient - Startup took 1439 msec
+[INFO ] 2024-01-17T08:50:00,044 [main] SimpleUrlHandlerMapping - Mapped URL path [/**/favicon.ico] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T08:50:00,172 [main] RequestMappingHandlerAdapter - Looking for @ControllerAdvice: org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@2ef14fe: startup date [Wed Jan 17 14:19:52 IST 2024]; root of context hierarchy
+[INFO ] 2024-01-17T08:50:00,268 [main] RequestMappingHandlerMapping - Mapped "{[/add-property],methods=[POST],consumes=[application/json],produces=[application/json]}" onto private org.springframework.http.ResponseEntity<java.lang.String> com.riequation.property.webserver.Controller.addProperty(java.util.HashMap<java.lang.String, java.lang.String>)
+[INFO ] 2024-01-17T08:50:00,269 [main] RequestMappingHandlerMapping - Mapped "{[/create-owner],methods=[POST],consumes=[application/json],produces=[application/json]}" onto private org.springframework.http.ResponseEntity<java.lang.String> com.riequation.property.webserver.Controller.createOwner(java.util.HashMap<java.lang.String, java.lang.String>)
+[INFO ] 2024-01-17T08:50:00,271 [main] RequestMappingHandlerMapping - Mapped "{[/owners],methods=[GET],produces=[application/json]}" onto public org.springframework.http.ResponseEntity<java.util.List<com.riequation.property.states.OwnerState>> com.riequation.property.webserver.Controller.getAllOwners()
+[INFO ] 2024-01-17T08:50:00,275 [main] RequestMappingHandlerMapping - Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+[INFO ] 2024-01-17T08:50:00,276 [main] RequestMappingHandlerMapping - Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+[INFO ] 2024-01-17T08:50:00,299 [main] SimpleUrlHandlerMapping - Mapped URL path [/webjars/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T08:50:00,299 [main] SimpleUrlHandlerMapping - Mapped URL path [/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T08:50:00,351 [main] WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+[INFO ] 2024-01-17T08:50:00,513 [main] AnnotationMBeanExporter - Registering beans for JMX exposure on startup
+[INFO ] 2024-01-17T08:50:00,527 [main] Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+[INFO ] 2024-01-17T08:50:00,529 [main] NioSelectorPool - Using a shared selector for servlet write/read
+[INFO ] 2024-01-17T08:50:00,550 [main] TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path ''
+[INFO ] 2024-01-17T08:50:00,554 [main] Starter - Started Starter in 9.678 seconds (JVM running for 10.524)
+[INFO ] 2024-01-17T08:50:08,565 [http-nio-8080-exec-1] [/] - Initializing Spring FrameworkServlet 'dispatcherServlet'
+[INFO ] 2024-01-17T08:50:08,565 [http-nio-8080-exec-1] DispatcherServlet - FrameworkServlet 'dispatcherServlet': initialization started
+[INFO ] 2024-01-17T08:50:08,582 [http-nio-8080-exec-1] DispatcherServlet - FrameworkServlet 'dispatcherServlet': initialization completed in 16 ms
+[INFO ] 2024-01-17T09:00:03,310 [main] Starter - Starting Starter on Nitro_seven with PID 11144 (started by himan in E:\Corda Property Management\samples-java\Accounts\tictacthor\clients)
+[INFO ] 2024-01-17T09:00:03,319 [main] Starter - No active profile set, falling back to default profiles: default
+[INFO ] 2024-01-17T09:00:03,405 [main] AnnotationConfigServletWebServerApplicationContext - Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@29526c05: startup date [Wed Jan 17 14:30:03 IST 2024]; root of context hierarchy
+[INFO ] 2024-01-17T09:00:05,218 [main] TomcatWebServer - Tomcat initialized with port(s): 8080 (http)
+[INFO ] 2024-01-17T09:00:05,235 [main] Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+[INFO ] 2024-01-17T09:00:05,249 [main] StandardService - Starting service [Tomcat]
+[INFO ] 2024-01-17T09:00:05,250 [main] StandardEngine - Starting Servlet Engine: Apache Tomcat/8.5.31
+[INFO ] 2024-01-17T09:00:05,261 [localhost-startStop-1] AprLifecycleListener - The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: [C:\Program Files\Java\jdk-1.8\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Users\himan\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\PuTTY\;C:\Program Files\Docker\Docker\resources\bin;D:\chrome download\gradle-5.6.4\bin;C:\Program Files\Java\jdk-1.8\bin;C:\Program Files\Java\jdk-1.8\jre\bin;C:\Users\himan\Downloads\mongosh-2.1.1-win32-x64\bin;C:\Ruby32-x64\bin;C:\Program Files\MySQL\MySQL Shell 8.0\bin\;C:\Users\himan\AppData\Local\Microsoft\WindowsApps;C:\Users\himan\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\himan\AppData\Roaming\nvm;C:\Program Files\nodejs;D:\chrome download\gradle-5.6.4\bin;C:\Program Files\Java\jdk-1.8\bin;C:\Program Files\Java\jdk-1.8\jre\bin;C:\Program Files\heroku\bin;C:\Users\himan\Downloads\mongosh-2.1.1-win32-x64\bin;;.]
+[INFO ] 2024-01-17T09:00:05,435 [localhost-startStop-1] [/] - Initializing Spring embedded WebApplicationContext
+[INFO ] 2024-01-17T09:00:05,435 [localhost-startStop-1] ContextLoader - Root WebApplicationContext: initialization completed in 2034 ms
+[INFO ] 2024-01-17T09:00:05,606 [localhost-startStop-1] ServletRegistrationBean - Servlet dispatcherServlet mapped to [/]
+[INFO ] 2024-01-17T09:00:05,613 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'characterEncodingFilter' to: [/*]
+[INFO ] 2024-01-17T09:00:05,614 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+[INFO ] 2024-01-17T09:00:05,615 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'httpPutFormContentFilter' to: [/*]
+[INFO ] 2024-01-17T09:00:05,615 [localhost-startStop-1] FilterRegistrationBean - Mapping filter: 'requestContextFilter' to: [/*]
+[INFO ] 2024-01-17T09:00:13,057 [main] RPCClient - Startup took 1739 msec
+[INFO ] 2024-01-17T09:00:13,971 [main] SimpleUrlHandlerMapping - Mapped URL path [/**/favicon.ico] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T09:00:14,156 [main] RequestMappingHandlerAdapter - Looking for @ControllerAdvice: org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@29526c05: startup date [Wed Jan 17 14:30:03 IST 2024]; root of context hierarchy
+[INFO ] 2024-01-17T09:00:14,258 [main] RequestMappingHandlerMapping - Mapped "{[/add-property],methods=[POST],consumes=[application/json],produces=[application/json]}" onto private org.springframework.http.ResponseEntity<java.lang.String> com.riequation.property.webserver.Controller.addProperty(java.util.HashMap<java.lang.String, java.lang.String>)
+[INFO ] 2024-01-17T09:00:14,260 [main] RequestMappingHandlerMapping - Mapped "{[/create-owner],methods=[POST],consumes=[application/json],produces=[application/json]}" onto private org.springframework.http.ResponseEntity<java.lang.String> com.riequation.property.webserver.Controller.createOwner(java.util.HashMap<java.lang.String, java.lang.String>)
+[INFO ] 2024-01-17T09:00:14,261 [main] RequestMappingHandlerMapping - Mapped "{[/owners],methods=[GET],produces=[application/json]}" onto public org.springframework.http.ResponseEntity<java.util.List<com.riequation.property.states.OwnerState>> com.riequation.property.webserver.Controller.getAllOwners()
+[INFO ] 2024-01-17T09:00:14,261 [main] RequestMappingHandlerMapping - Mapped "{[/properties],methods=[GET],produces=[application/json]}" onto public org.springframework.http.ResponseEntity<java.util.List<com.riequation.property.states.PropertyState>> com.riequation.property.webserver.Controller.getAllProperties()
+[INFO ] 2024-01-17T09:00:14,262 [main] RequestMappingHandlerMapping - Mapped "{[/properties/owner/{ownerId}],methods=[GET],produces=[application/json]}" onto public org.springframework.http.ResponseEntity<java.util.List<com.riequation.property.states.PropertyState>> com.riequation.property.webserver.Controller.getPropertiesByOwnerId(java.lang.String)
+[INFO ] 2024-01-17T09:00:14,265 [main] RequestMappingHandlerMapping - Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+[INFO ] 2024-01-17T09:00:14,266 [main] RequestMappingHandlerMapping - Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+[INFO ] 2024-01-17T09:00:14,310 [main] SimpleUrlHandlerMapping - Mapped URL path [/webjars/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T09:00:14,311 [main] SimpleUrlHandlerMapping - Mapped URL path [/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[INFO ] 2024-01-17T09:00:14,393 [main] WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+[INFO ] 2024-01-17T09:00:14,574 [main] AnnotationMBeanExporter - Registering beans for JMX exposure on startup
+[INFO ] 2024-01-17T09:00:14,589 [main] Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+[INFO ] 2024-01-17T09:00:14,591 [main] NioSelectorPool - Using a shared selector for servlet write/read
+[INFO ] 2024-01-17T09:00:14,615 [main] TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path ''
+[INFO ] 2024-01-17T09:00:14,620 [main] Starter - Started Starter in 12.438 seconds (JVM running for 13.563)
+[INFO ] 2024-01-17T09:00:29,004 [http-nio-8080-exec-1] [/] - Initializing Spring FrameworkServlet 'dispatcherServlet'
+[INFO ] 2024-01-17T09:00:29,005 [http-nio-8080-exec-1] DispatcherServlet - FrameworkServlet 'dispatcherServlet': initialization started
+[INFO ] 2024-01-17T09:00:29,031 [http-nio-8080-exec-1] DispatcherServlet - FrameworkServlet 'dispatcherServlet': initialization completed in 25 ms

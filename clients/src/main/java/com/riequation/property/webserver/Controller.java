@@ -19,11 +19,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import net.corda.core.contracts.StateAndRef;
+import net.corda.core.contracts.TransactionState;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -96,17 +98,17 @@ public class Controller {
         }
     }
 
-
     @PostMapping(value = "/add-property", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> addProperty(@RequestBody HashMap<String, String> propertyDetails) {
+    private ResponseEntity<String> addProperty(@RequestBody HashMap<String, String> propertyDetails) {
         try {
-            String address = propertyDetails.get("address");
-            String propertyType = propertyDetails.get("propertyType");
-            String ownerAccountId = propertyDetails.get("ownerAccountId"); // UUID as String
+            String details = propertyDetails.get("details");
+            String ownerId = propertyDetails.get("ownerId");
 
-            UUID ownerAccountUUID = UUID.fromString(ownerAccountId);
+            // Parsing the owner's UniqueIdentifier from the provided ownerId string
+            UniqueIdentifier ownerUniqueId = UniqueIdentifier.Companion.fromString(ownerId);
+
             UniqueIdentifier id = proxy.startTrackedFlowDynamic(
-                    AddPropertyFlow.class, address, propertyType, ownerAccountUUID
+                    AddPropertyFlow.class, details, ownerUniqueId
             ).getReturnValue().get();
 
             return ResponseEntity.status(HttpStatus.CREATED).body("Property added with ID: " + id.toString());
@@ -115,40 +117,44 @@ public class Controller {
         }
     }
 
-
-    @GetMapping(value = "/properties/{ownerAccountId}", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getPropertyListByOwner(@PathVariable String ownerAccountId) {
-        try {
-            UUID ownerAccountUUID = UUID.fromString(ownerAccountId);
-            List<PropertyState> properties = proxy.startTrackedFlowDynamic(
-                    GetPropertiesOfOwnerFlow.class, ownerAccountUUID
-            ).getReturnValue().get();
-
-            if (properties.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No properties found for the given owner account ID.");
-            }
-
-            return new ResponseEntity<>(properties, HttpStatus.OK);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error retrieving properties: " + e.getMessage());
-        }
-    }
-
-
     @GetMapping(value = "/properties", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllProperties() {
+    public ResponseEntity<List<PropertyState>> getAllProperties() {
         try {
-            List<PropertyState> properties = proxy.startTrackedFlowDynamic(GetAllPropertiesFlow.class).getReturnValue().get();
-
-            if (properties.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No properties found.");
-            }
-
+            List<PropertyState> properties = proxy.startTrackedFlowDynamic(GetAllPropertiesFlow.class)
+                    .getReturnValue()
+                    .get()
+                    .stream()
+                    .map(StateAndRef::getState)
+                    .map(TransactionState::getData)
+                    .collect(Collectors.toList());
             return new ResponseEntity<>(properties, HttpStatus.OK);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error retrieving properties: " + e.getMessage());
+            logger.error("Error retrieving properties", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping(value = "/properties/owner/{ownerId}", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<PropertyState>> getPropertiesByOwnerId(@PathVariable String ownerId) {
+        try {
+            UniqueIdentifier ownerUniqueId = UniqueIdentifier.Companion.fromString(ownerId);
+            List<PropertyState> properties = proxy.startTrackedFlowDynamic(GetPropertyByOwnerIdFlow.class, ownerUniqueId)
+                    .getReturnValue()
+                    .get()
+                    .stream()
+                    .map(StateAndRef::getState)
+                    .map(TransactionState::getData)
+                    .collect(Collectors.toList());
+            return new ResponseEntity<>(properties, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("Error retrieving properties for owner ID: " + ownerId, e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
+
 
 
 
