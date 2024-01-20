@@ -5,8 +5,6 @@ import net.corda.core.contracts.CommandData;
 import net.corda.core.contracts.Contract;
 import net.corda.core.transactions.LedgerTransaction;
 
-import java.util.List;
-
 public class PropertyContract implements Contract {
     public static final String ID = "com.riequation.property.contracts.PropertyContract";
 
@@ -40,8 +38,37 @@ public class PropertyContract implements Contract {
         if (outputState.getPropertyDetails().trim().isEmpty())
             throw new IllegalArgumentException("Property details cannot be empty");
 
-        // Additional validations can be added here. For example, checking if the owner is registered.
-        // This might involve using a reference state to refer to the OwnerState or some other mechanism.
+        // Additional validations for the new fields
+        validatePropertyState(outputState);
+    }
+
+    private void validatePropertyState(PropertyState state) {
+        if (state.getAddress().trim().isEmpty())
+            throw new IllegalArgumentException("Address cannot be empty");
+
+        if (state.getPincode().trim().isEmpty())
+            throw new IllegalArgumentException("Pincode cannot be empty");
+
+        if (state.getPrice() == null || state.getPrice() <= 0)
+            throw new IllegalArgumentException("Price must be a positive value");
+
+        if (state.getOwnerName().trim().isEmpty())
+            throw new IllegalArgumentException("Owner name cannot be empty");
+
+        if (state.getSqrtFeet() == null || state.getSqrtFeet() <= 0)
+            throw new IllegalArgumentException("Square feet must be a positive value");
+
+        if (state.getAmenities() == null || state.getAmenities().isEmpty())
+            throw new IllegalArgumentException("Amenities list cannot be empty");
+
+        if (state.getPropertyType().trim().isEmpty())
+            throw new IllegalArgumentException("Property type cannot be empty");
+
+        if (state.getBhkInfo().trim().isEmpty())
+            throw new IllegalArgumentException("BHK info cannot be empty");
+
+        if (state.getDescription().trim().isEmpty())
+            throw new IllegalArgumentException("Description cannot be empty");
     }
 
     public interface Commands extends CommandData {

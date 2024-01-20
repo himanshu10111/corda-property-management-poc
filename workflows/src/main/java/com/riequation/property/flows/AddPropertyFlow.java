@@ -22,12 +22,32 @@ import java.util.stream.Collectors;
 public class AddPropertyFlow extends FlowLogic<UniqueIdentifier> {
     private final String propertyDetails;
     private final UniqueIdentifier ownerId;
+    private final String address;
+    private final String pincode;
+    private final Double price;
+    private final String ownerName;
+    private final Double sqrtFeet;
+    private final List<String> amenities;
+    private final String propertyType;
+    private final String bhkInfo;
+    private final String description;
 
     private final ProgressTracker progressTracker = new ProgressTracker();
 
-    public AddPropertyFlow(String propertyDetails, UniqueIdentifier ownerId) {
+    public AddPropertyFlow(String propertyDetails, UniqueIdentifier ownerId, String address, String pincode,
+                           Double price, String ownerName, Double sqrtFeet, List<String> amenities,
+                           String propertyType, String bhkInfo, String description) {
         this.propertyDetails = propertyDetails;
         this.ownerId = ownerId;
+        this.address = address;
+        this.pincode = pincode;
+        this.price = price;
+        this.ownerName = ownerName;
+        this.sqrtFeet = sqrtFeet;
+        this.amenities = amenities;
+        this.propertyType = propertyType;
+        this.bhkInfo = bhkInfo;
+        this.description = description;
     }
 
     @Override
@@ -49,8 +69,10 @@ public class AddPropertyFlow extends FlowLogic<UniqueIdentifier> {
         // Generate a unique identifier for the property
         UniqueIdentifier propertyLinearId = new UniqueIdentifier();
 
-        // Create the output state
-        PropertyState outputState = new PropertyState(propertyDetails, ownerId, getOurIdentity(), propertyLinearId);
+        // Create the output state with new fields
+        PropertyState outputState = new PropertyState(propertyDetails, ownerId, getOurIdentity(), propertyLinearId,
+                address, pincode, price, ownerName, sqrtFeet, amenities,
+                propertyType, bhkInfo, description);
 
         // Build the transaction
         TransactionBuilder txBuilder = new TransactionBuilder(notary)
@@ -63,12 +85,12 @@ public class AddPropertyFlow extends FlowLogic<UniqueIdentifier> {
         // Sign the transaction
         SignedTransaction signedTx = getServiceHub().signInitialTransaction(txBuilder);
 
-        // Finalize the transaction and return the linearId
+        // Finalize the transaction
         subFlow(new FinalityFlow(signedTx, Collections.emptyList()));
         return propertyLinearId;
     }
 
-    private boolean isOwnerRegistered(UniqueIdentifier ownerId) throws FlowException {
+    private boolean isOwnerRegistered(UniqueIdentifier ownerId) {
         // Query the vault for OwnerState with the given ownerId
         List<StateAndRef<OwnerState>> ownerStates = getServiceHub().getVaultService()
                 .queryBy(OwnerState.class)

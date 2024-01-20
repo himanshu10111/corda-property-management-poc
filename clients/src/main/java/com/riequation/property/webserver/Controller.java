@@ -21,10 +21,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.contracts.TransactionState;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -99,16 +99,35 @@ public class Controller {
     }
 
     @PostMapping(value = "/add-property", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
-    private ResponseEntity<String> addProperty(@RequestBody HashMap<String, String> propertyDetails) {
+    private ResponseEntity<String> addProperty(@RequestBody Map<String, Object> propertyDetails) {
         try {
-            String details = propertyDetails.get("details");
-            String ownerId = propertyDetails.get("ownerId");
+            String details = (String) propertyDetails.get("details");
+            String ownerId = (String) propertyDetails.get("ownerId");
 
             // Parsing the owner's UniqueIdentifier from the provided ownerId string
             UniqueIdentifier ownerUniqueId = UniqueIdentifier.Companion.fromString(ownerId);
 
+            // Parse other fields correctly, handling BigDecimal and List types
+            String address = (String) propertyDetails.get("address");
+            String pincode = (String) propertyDetails.get("pincode");
+
+            // Cast to BigDecimal and then convert to Double
+            Double price = ((BigDecimal) propertyDetails.get("price")).doubleValue();
+            String ownerName = (String) propertyDetails.get("ownerName");
+            Double sqrtFeet = ((BigDecimal) propertyDetails.get("sqrtFeet")).doubleValue();
+
+            // Handle amenities as a List
+            @SuppressWarnings("unchecked")
+            List<String> amenities = (List<String>) propertyDetails.get("amenities");
+
+            String propertyType = (String) propertyDetails.get("propertyType");
+            String bhkInfo = (String) propertyDetails.get("bhkInfo");
+            String description = (String) propertyDetails.get("description");
+
+            // Start the flow with all parameters
             UniqueIdentifier id = proxy.startTrackedFlowDynamic(
-                    AddPropertyFlow.class, details, ownerUniqueId
+                    AddPropertyFlow.class, details, ownerUniqueId, address, pincode, price,
+                    ownerName, sqrtFeet, amenities, propertyType, bhkInfo, description
             ).getReturnValue().get();
 
             return ResponseEntity.status(HttpStatus.CREATED).body("Property added with ID: " + id.toString());
@@ -116,6 +135,8 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error adding property: " + e.getMessage());
         }
     }
+
+
 
     @GetMapping(value = "/properties", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<PropertyState>> getAllProperties() {
