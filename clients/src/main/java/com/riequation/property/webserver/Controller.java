@@ -2,6 +2,7 @@ package com.riequation.property.webserver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.riequation.property.flows.*;
+import com.riequation.property.states.AgentState;
 import com.riequation.property.states.OwnerState;
 import com.riequation.property.states.PropertyState;
 import net.corda.client.jackson.JacksonSupport;
@@ -69,6 +70,8 @@ public class Controller {
         }
     }
 
+//    ----------------------------------- Owner Api -------------------------------
+
     @PostMapping(value = "/create-owner", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
     private ResponseEntity<String> createOwner(@RequestBody HashMap<String, String> ownerDetails) {
         try {
@@ -97,6 +100,8 @@ public class Controller {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+//    ------------------------------- Owner Property Api...........................
 
     @PostMapping(value = "/add-property", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
     private ResponseEntity<String> addProperty(@RequestBody Map<String, Object> propertyDetails) {
@@ -174,11 +179,36 @@ public class Controller {
     }
 
 
+//    ------------------------------------ Agent Api -------------------------------------
 
+    @PostMapping(value = "/create-agent", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> createAgent(@RequestBody HashMap<String, String> agentDetails) {
+        try {
+            String name = agentDetails.get("name");
+            String email = agentDetails.get("email");
+            String password = agentDetails.get("password"); // Ensure password is hashed
+            String mobileNumber = agentDetails.get("mobileNumber");
+            String address = agentDetails.get("address");
 
+            UniqueIdentifier id = proxy.startTrackedFlowDynamic(
+                    CreateAgentFlow.class, name, email, password, mobileNumber, address
+            ).getReturnValue().get();
 
+            return ResponseEntity.status(HttpStatus.CREATED).body("Agent created with ID: " + id.toString());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error creating agent: " + e.getMessage());
+        }
+    }
 
-
+    @GetMapping(value = "/agents", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<AgentState>> getAllAgents() {
+        try {
+            List<AgentState> agents = proxy.startTrackedFlowDynamic(GetAllAgentsFlow.class).getReturnValue().get();
+            return new ResponseEntity<>(agents, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
 
 
