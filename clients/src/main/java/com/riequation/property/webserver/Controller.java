@@ -17,13 +17,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.contracts.TransactionState;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -38,6 +42,7 @@ public class Controller {
     private final CordaRPCOps proxy;
     private final CordaX500Name me;
 
+    private final RestTemplate restTemplate = new RestTemplate();
     public Controller(NodeRPCConnection rpc) {
         this.proxy = rpc.proxy;
         this.me = proxy.nodeInfo().getLegalIdentities().get(0).getName();
@@ -209,6 +214,52 @@ public class Controller {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @PostMapping(value = "/create-owner-agent-property-contract", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> createOwnerAgentPropertyContract(@RequestBody Map<String, String> contractDetails) {
+        try {
+            UniqueIdentifier ownerId = UniqueIdentifier.Companion.fromString(contractDetails.get("ownerId"));
+            UniqueIdentifier agentId = UniqueIdentifier.Companion.fromString(contractDetails.get("agentId"));
+            UniqueIdentifier propertyId = UniqueIdentifier.Companion.fromString(contractDetails.get("propertyId"));
+            Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(contractDetails.get("startDate"));
+            Date endDate = new SimpleDateFormat("yyyy-MM-dd").parse(contractDetails.get("endDate"));
+            String contractDetailsString = contractDetails.get("contractDetails"); // JSON or specific format
+            String status = contractDetails.get("status");
+
+            // Fetch the list of valid agent IDs
+            List<UniqueIdentifier> validAgentIds = fetchValidAgentIds();
+
+            UniqueIdentifier id = proxy.startTrackedFlowDynamic(
+                    CreateOwnerAgentPropertyContractFlow.class, ownerId, agentId, propertyId,
+                    startDate, endDate, contractDetailsString, status, validAgentIds
+            ).getReturnValue().get();
+
+            return ResponseEntity.status(HttpStatus.CREATED).body("Owner-Agent-Property Contract created with ID: " + id.toString());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error creating contract: " + e.getMessage());
+        }
+    }
+
+
+    private List<UniqueIdentifier> fetchValidAgentIds() throws Exception {
+        String agentNodeUrl = "http://localhost:8090/agents"; // Replace with the actual agent node URL
+        ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
+                agentNodeUrl, HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<Map<String, Object>>>() {}
+        );
+
+        if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+            throw new Exception("Failed to fetch agent IDs from agent node");
+        }
+
+        // Extract the list of agent IDs from the response
+        return response.getBody().stream()
+                .map(agentInfo -> (Map<String, Object>)agentInfo.get("linearId"))
+                .map(linearIdMap -> (String)linearIdMap.get("id"))
+                .map(UniqueIdentifier.Companion::fromString)
+                .collect(Collectors.toList());
+    }
+
 }
 
 
