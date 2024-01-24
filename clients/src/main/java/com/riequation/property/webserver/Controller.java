@@ -260,7 +260,53 @@ public class Controller {
                 .collect(Collectors.toList());
     }
 
+
+
+//    ----------------------------- Login Api----------------------------------------
+
+
+    @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<?> loginUser(@RequestBody Map<String, String> params) {
+        try {
+            String email = params.get("email");
+            String password = params.get("password");
+
+            UniqueIdentifier ownerId = authenticateOwner(email, password);
+            if (ownerId != null) {
+                String token = JwtUtil.generateToken(email);
+                Map<String, String> response = new HashMap<>();
+                response.put("token", token);
+                response.put("ownerId", ownerId.toString()); // Include the owner's linear ID in the response
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+        }
+    }
+
+
+    private UniqueIdentifier authenticateOwner(String email, String password) {
+        try {
+            // Query the ledger for an owner with the given email
+            List<StateAndRef<OwnerState>> ownerStates = proxy.vaultQuery(OwnerState.class).getStates();
+            return ownerStates.stream()
+                    .map(StateAndRef::getState)
+                    .map(net.corda.core.contracts.TransactionState::getData)
+                    .filter(owner -> owner.getEmail().equals(email) && owner.getPassword().equals(password))
+                    .findFirst()
+                    .map(OwnerState::getLinearId)
+                    .orElse(null); // Return null if owner not found or password does not match
+        } catch (Exception e) {
+            logger.error("Authentication failed: " + e.getMessage(), e);
+            return null;
+        }
+    }
 }
+
+
 
 
 
