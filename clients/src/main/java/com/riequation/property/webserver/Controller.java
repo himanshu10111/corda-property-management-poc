@@ -5,6 +5,7 @@ import com.riequation.property.flows.*;
 import com.riequation.property.states.AgentState;
 import com.riequation.property.states.OwnerState;
 import com.riequation.property.states.PropertyState;
+import com.riequation.property.states.TenantState;
 import net.corda.client.jackson.JacksonSupport;
 import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.identity.CordaX500Name;
@@ -262,7 +263,7 @@ public class Controller {
 
 
 
-//    ----------------------------- Login Api----------------------------------------
+//    ----------------------------- Owner Login Api----------------------------------------
 
 
     @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
@@ -304,6 +305,117 @@ public class Controller {
             return null;
         }
     }
+
+//    ----------------------------------- Agent Login--------------------------------
+
+    @PostMapping(value = "/agent/login", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<?> loginAgent(@RequestBody Map<String, String> params) {
+        try {
+            String email = params.get("email");
+            String password = params.get("password");
+
+            UniqueIdentifier agentId = authenticateAgent(email, password);
+            if (agentId != null) {
+                String token = JwtUtil.generateToken(email);
+                Map<String, String> response = new HashMap<>();
+                response.put("token", token);
+                response.put("agentId", agentId.toString());
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+        }
+    }
+
+    private UniqueIdentifier authenticateAgent(String email, String password) {
+        try {
+            List<StateAndRef<AgentState>> agentStates = proxy.vaultQuery(AgentState.class).getStates();
+            Optional<AgentState> agentState = agentStates.stream()
+                    .map(StateAndRef::getState)
+                    .map(net.corda.core.contracts.TransactionState::getData)
+                    .filter(agent -> agent.getEmail().equals(email) && agent.getPassword().equals(password))
+                    .findFirst();
+
+            return agentState.map(AgentState::getLinearId).orElse(null);
+        } catch (Exception e) {
+            logger.error("Agent authentication failed: " + e.getMessage(), e);
+            return null;
+        }
+    }
+//    ---------------------------------------- Tentant Api----------------------------------
+
+
+    @PostMapping(value = "/create-tenant", produces = "application/json", consumes = "application/json")
+    public ResponseEntity<String> createTenant(@RequestBody HashMap<String, String> tenantDetails) {
+        try {
+            String name = tenantDetails.get("name");
+            String email = tenantDetails.get("email");
+            String password = tenantDetails.get("password"); // Ensure password is hashed
+            String mobileNumber = tenantDetails.get("mobileNumber");
+            String address = tenantDetails.get("address");
+
+            UniqueIdentifier id = proxy.startTrackedFlowDynamic(
+                    CreateTenantFlow.class, name, email, password, mobileNumber, address
+            ).getReturnValue().get();
+
+            return ResponseEntity.status(HttpStatus.CREATED).body("Tenant created with ID: " + id.toString());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error creating tenant: " + e.getMessage());
+        }
+    }
+
+    @GetMapping(value = "/tenants", produces = "application/json")
+    public ResponseEntity<List<TenantState>> getAllTenants() {
+        try {
+            List<TenantState> tenants = proxy.startTrackedFlowDynamic(GetAllTenantsFlow.class).getReturnValue().get();
+            return new ResponseEntity<>(tenants, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping(value = "/login/tentant", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<?> loginTentent (@RequestBody Map<String, String> params) {
+        try {
+            String email = params.get("email");
+            String password = params.get("password");
+
+            UniqueIdentifier tenantId = authenticateTenant(email, password);
+            if (tenantId != null) {
+                String token = JwtUtil.generateToken(email);
+                Map<String, String> response = new HashMap<>();
+                response.put("token", token);
+                response.put("tenantId", tenantId.toString()); // Include the tenant's linear ID in the response
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+        }
+    }
+
+    private UniqueIdentifier authenticateTenant(String email, String password) {
+        try {
+            // Query the ledger for a tenant with the given email
+            List<StateAndRef<TenantState>> tenantStates = proxy.vaultQuery(TenantState.class).getStates();
+            return tenantStates.stream()
+                    .map(StateAndRef::getState)
+                    .map(net.corda.core.contracts.TransactionState::getData)
+                    .filter(tenant -> tenant.getEmail().equals(email) && tenant.getPassword().equals(password))
+                    .findFirst()
+                    .map(TenantState::getLinearId)
+                    .orElse(null); // Return null if tenant not found or password does not match
+        } catch (Exception e) {
+            logger.error("Authentication failed: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
 }
 
 

@@ -51,3 +51,9 @@ task agentNode(type: JavaExec, dependsOn: jar) {
     main = 'com.riequation.property.webserver.Starter'
     args '--server.port=8090', '--config.rpc.host=localhost', '--config.rpc.port=10009', '--config.rpc.username=user1', '--config.rpc.password=test'
 }
+
+task tenantNode(type: JavaExec, dependsOn: jar) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'com.riequation.property.webserver.Starter'
+    args '--server.port=8010', '--config.rpc.host=localhost', '--config.rpc.port=10012', '--config.rpc.username=user1', '--config.rpc.password=test'
+}
