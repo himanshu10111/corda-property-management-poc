@@ -15,7 +15,7 @@ public class PropertyState implements LinearState {
     private final UniqueIdentifier linearId;
     private final AbstractParty host;
 
-    // New fields
+    // Existing fields
     private final String address;
     private final String pincode;
     private final Double price;
@@ -26,10 +26,13 @@ public class PropertyState implements LinearState {
     private final String bhkInfo;
     private final String description;
 
-    // Updated constructor
+    // New field to track the current contract
+    private final UniqueIdentifier currentContractId;
+
+    // Updated constructor with new field
     public PropertyState(String propertyDetails, UniqueIdentifier ownerId, AbstractParty host, UniqueIdentifier linearId,
                          String address, String pincode, Double price, String ownerName, Double sqrtFeet, List<String> amenities,
-                         String propertyType, String bhkInfo, String description) {
+                         String propertyType, String bhkInfo, String description, UniqueIdentifier currentContractId) {
         this.propertyDetails = propertyDetails;
         this.ownerId = ownerId;
         this.host = host;
@@ -43,9 +46,14 @@ public class PropertyState implements LinearState {
         this.propertyType = propertyType;
         this.bhkInfo = bhkInfo;
         this.description = description;
+        this.currentContractId = currentContractId; // Initialize the new field
     }
 
-    // Getters for the new fields
+    // Getters for all fields
+    public String getPropertyDetails() { return propertyDetails; }
+    public UniqueIdentifier getOwnerId() { return ownerId; }
+    public AbstractParty getHost() { return host; }
+    public UniqueIdentifier getLinearId() { return linearId; }
     public String getAddress() { return address; }
     public String getPincode() { return pincode; }
     public Double getPrice() { return price; }
@@ -55,13 +63,7 @@ public class PropertyState implements LinearState {
     public String getPropertyType() { return propertyType; }
     public String getBhkInfo() { return bhkInfo; }
     public String getDescription() { return description; }
-
-    // Existing getters...
-    public String getPropertyDetails() { return propertyDetails; }
-    public UniqueIdentifier getOwnerId() { return ownerId; }
-    public AbstractParty getHost() { return host; }
-    @Override
-    public UniqueIdentifier getLinearId() { return linearId; }
+    public UniqueIdentifier getCurrentContractId() { return currentContractId; } // Getter for the new field
 
     @Override
     public List<AbstractParty> getParticipants() {

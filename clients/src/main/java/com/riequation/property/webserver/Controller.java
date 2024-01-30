@@ -2,10 +2,10 @@ package com.riequation.property.webserver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.riequation.property.flows.*;
-import com.riequation.property.states.AgentState;
-import com.riequation.property.states.OwnerState;
-import com.riequation.property.states.PropertyState;
-import com.riequation.property.states.TenantState;
+import com.riequation.property.states.*;
+import com.riequation.property.webserver.Dto.AgentStateDTO;
+import com.riequation.property.webserver.Dto.OwnerStateDTO;
+import com.riequation.property.webserver.Dto.TenantStateDTO;
 import net.corda.client.jackson.JacksonSupport;
 import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.identity.CordaX500Name;
@@ -14,6 +14,7 @@ import net.corda.core.messaging.CordaRPCOps;
 import net.corda.core.node.NodeInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -36,7 +37,8 @@ import java.util.stream.Collectors;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping("/") // The paths for HTTP requests are relative to this base path.
+@RequestMapping("/")
+@CrossOrigin(origins = "*")
 public class Controller {
 
     private static final Logger logger = LoggerFactory.getLogger(RestController.class);
@@ -91,21 +93,31 @@ public class Controller {
                     CreateOwnerFlow.class, name, email, password, mobileNumber, address
             ).getReturnValue().get();
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("Owner created with ID: " + id.toString());
+            JSONObject responseJson = new JSONObject();
+            responseJson.put("id", id.toString());
+            responseJson.put("message", "Owner created successfully");
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseJson.toString());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error creating owner: " + e.getMessage());
+            JSONObject errorJson = new JSONObject();
+            errorJson.put("error", "Error creating owner: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorJson.toString());
         }
     }
 
     @GetMapping(value = "/owners", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<OwnerState>> getAllOwners() {
+    public ResponseEntity<List<OwnerStateDTO>> getAllOwners() {
         try {
             List<OwnerState> owners = proxy.startTrackedFlowDynamic(GetAllOwnersFlow.class).getReturnValue().get();
-            return new ResponseEntity<>(owners, HttpStatus.OK);
+            List<OwnerStateDTO> ownerDtos = owners.stream()
+                    .map(owner -> new OwnerStateDTO(owner.getName(), owner.getEmail(), owner.getMobileNumber(), owner.getAddress(), owner.getHost(), owner.getLinearId()))
+                    .collect(Collectors.toList());
+            return new ResponseEntity<>(ownerDtos, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 //    ------------------------------- Owner Property Api...........................
 
@@ -121,8 +133,6 @@ public class Controller {
             // Parse other fields correctly, handling BigDecimal and List types
             String address = (String) propertyDetails.get("address");
             String pincode = (String) propertyDetails.get("pincode");
-
-            // Cast to BigDecimal and then convert to Double
             Double price = ((BigDecimal) propertyDetails.get("price")).doubleValue();
             String ownerName = (String) propertyDetails.get("ownerName");
             Double sqrtFeet = ((BigDecimal) propertyDetails.get("sqrtFeet")).doubleValue();
@@ -146,6 +156,7 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error adding property: " + e.getMessage());
         }
     }
+
 
 
 
@@ -200,21 +211,30 @@ public class Controller {
                     CreateAgentFlow.class, name, email, password, mobileNumber, address
             ).getReturnValue().get();
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("Agent created with ID: " + id.toString());
+            JSONObject responseJson = new JSONObject();
+            responseJson.put("id", id.toString());
+            responseJson.put("message", "Agent created successfully");
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseJson.toString());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error creating agent: " + e.getMessage());
+            JSONObject errorJson = new JSONObject();
+            errorJson.put("error", "Error creating agent: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorJson.toString());
         }
     }
-
     @GetMapping(value = "/agents", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<AgentState>> getAllAgents() {
+    public ResponseEntity<List<AgentStateDTO>> getAllAgents() {
         try {
             List<AgentState> agents = proxy.startTrackedFlowDynamic(GetAllAgentsFlow.class).getReturnValue().get();
-            return new ResponseEntity<>(agents, HttpStatus.OK);
+            List<AgentStateDTO> agentDtos = agents.stream()
+                    .map(agent -> new AgentStateDTO(agent.getName(), agent.getEmail(), agent.getMobileNumber(), agent.getAddress(), agent.getHost(), agent.getLinearId()))
+                    .collect(Collectors.toList());
+            return new ResponseEntity<>(agentDtos, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     @PostMapping(value = "/create-owner-agent-property-contract", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createOwnerAgentPropertyContract(@RequestBody Map<String, String> contractDetails) {
@@ -261,13 +281,35 @@ public class Controller {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping(value = "/get-contracts-by-owner", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getContractsByOwner(@RequestParam("ownerId") String ownerIdString) {
+        try {
+            UniqueIdentifier ownerId = UniqueIdentifier.Companion.fromString(ownerIdString);
+            List<OwnerAgentPropertyContractState> contracts = proxy.startTrackedFlowDynamic(GetContractsByOwnerFlow.class, ownerId)
+                    .getReturnValue()
+                    .get();
+
+            // Convert contracts to a suitable response format (if needed)
+            // ...
+
+            return ResponseEntity.ok(contracts);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error fetching contracts: " + e.getMessage());
+        }
+    }
+
+
+
+
+
+
 
 
 //    ----------------------------- Owner Login Api----------------------------------------
 
 
-    @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<?> loginUser(@RequestBody Map<String, String> params) {
+    @PostMapping(value = "owner-login", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<String> loginUser(@RequestBody Map<String, String> params) {
         try {
             String email = params.get("email");
             String password = params.get("password");
@@ -275,19 +317,25 @@ public class Controller {
             UniqueIdentifier ownerId = authenticateOwner(email, password);
             if (ownerId != null) {
                 String token = JwtUtil.generateToken(email);
-                Map<String, String> response = new HashMap<>();
-                response.put("token", token);
-                response.put("ownerId", ownerId.toString()); // Include the owner's linear ID in the response
-                return ResponseEntity.ok(response);
+                JSONObject responseJson = new JSONObject();
+                responseJson.put("token", token);
+                responseJson.put("ownerId", ownerId.toString());
+                responseJson.put("message", "Login successful");
+                return ResponseEntity.ok(responseJson.toString());
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+                JSONObject errorJson = new JSONObject();
+                errorJson.put("error", "Invalid credentials");
+                errorJson.put("message", "Login failed due to invalid credentials");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorJson.toString());
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+            JSONObject errorJson = new JSONObject();
+            errorJson.put("error", "Authentication failed");
+            errorJson.put("message", "Login failed due to an internal error");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorJson.toString());
         }
     }
-
 
     private UniqueIdentifier authenticateOwner(String email, String password) {
         try {
@@ -308,8 +356,8 @@ public class Controller {
 
 //    ----------------------------------- Agent Login--------------------------------
 
-    @PostMapping(value = "/agent/login", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<?> loginAgent(@RequestBody Map<String, String> params) {
+    @PostMapping(value = "/agent-login", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<String> loginAgent(@RequestBody Map<String, String> params) {
         try {
             String email = params.get("email");
             String password = params.get("password");
@@ -317,19 +365,25 @@ public class Controller {
             UniqueIdentifier agentId = authenticateAgent(email, password);
             if (agentId != null) {
                 String token = JwtUtil.generateToken(email);
-                Map<String, String> response = new HashMap<>();
-                response.put("token", token);
-                response.put("agentId", agentId.toString());
-                return ResponseEntity.ok(response);
+                JSONObject responseJson = new JSONObject();
+                responseJson.put("token", token);
+                responseJson.put("agentId", agentId.toString());
+                responseJson.put("message", "Login successful");
+                return ResponseEntity.ok(responseJson.toString());
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+                JSONObject errorJson = new JSONObject();
+                errorJson.put("error", "Invalid credentials");
+                errorJson.put("message", "Login failed due to invalid credentials");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorJson.toString());
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+            JSONObject errorJson = new JSONObject();
+            errorJson.put("error", "Authentication failed");
+            errorJson.put("message", "Login failed due to an internal error");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorJson.toString());
         }
     }
-
     private UniqueIdentifier authenticateAgent(String email, String password) {
         try {
             List<StateAndRef<AgentState>> agentStates = proxy.vaultQuery(AgentState.class).getStates();
@@ -361,24 +415,33 @@ public class Controller {
                     CreateTenantFlow.class, name, email, password, mobileNumber, address
             ).getReturnValue().get();
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("Tenant created with ID: " + id.toString());
+            JSONObject responseJson = new JSONObject();
+            responseJson.put("id", id.toString());
+            responseJson.put("message", "Tenant created successfully");
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseJson.toString());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error creating tenant: " + e.getMessage());
+            JSONObject errorJson = new JSONObject();
+            errorJson.put("error", "Error creating tenant: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorJson.toString());
         }
     }
-
     @GetMapping(value = "/tenants", produces = "application/json")
-    public ResponseEntity<List<TenantState>> getAllTenants() {
+    public ResponseEntity<List<TenantStateDTO>> getAllTenants() {
         try {
             List<TenantState> tenants = proxy.startTrackedFlowDynamic(GetAllTenantsFlow.class).getReturnValue().get();
-            return new ResponseEntity<>(tenants, HttpStatus.OK);
+            List<TenantStateDTO> tenantDtos = tenants.stream()
+                    .map(tenant -> new TenantStateDTO(tenant.getName(), tenant.getEmail(), tenant.getMobileNumber(), tenant.getAddress(), tenant.getHost(), tenant.getLinearId()))
+                    .collect(Collectors.toList());
+            return new ResponseEntity<>(tenantDtos, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @PostMapping(value = "/login/tentant", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<?> loginTentent (@RequestBody Map<String, String> params) {
+
+    @PostMapping(value = "/login-tentant", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<String> loginTentent(@RequestBody Map<String, String> params) {
         try {
             String email = params.get("email");
             String password = params.get("password");
@@ -386,16 +449,23 @@ public class Controller {
             UniqueIdentifier tenantId = authenticateTenant(email, password);
             if (tenantId != null) {
                 String token = JwtUtil.generateToken(email);
-                Map<String, String> response = new HashMap<>();
-                response.put("token", token);
-                response.put("tenantId", tenantId.toString()); // Include the tenant's linear ID in the response
-                return ResponseEntity.ok(response);
+                JSONObject responseJson = new JSONObject();
+                responseJson.put("token", token);
+                responseJson.put("tenantId", tenantId.toString());
+                responseJson.put("message", "Login successful");
+                return ResponseEntity.ok(responseJson.toString());
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+                JSONObject errorJson = new JSONObject();
+                errorJson.put("error", "Invalid credentials");
+                errorJson.put("message", "Login failed due to invalid credentials");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorJson.toString());
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+            JSONObject errorJson = new JSONObject();
+            errorJson.put("error", "Authentication failed");
+            errorJson.put("message", "Login failed due to an internal error");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorJson.toString());
         }
     }
 

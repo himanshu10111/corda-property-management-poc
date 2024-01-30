@@ -47,5 +47,10 @@ public class OwnerAgentPropertyContractState implements LinearState {
     @Override
     public List<AbstractParty> getParticipants() { return participants; }
 
+    // Helper methods for contract validation
+    public boolean isDateRangeValid() {
+        return startDate.before(endDate);
+    }
 
+    // Additional helper methods can be added as needed.
 }

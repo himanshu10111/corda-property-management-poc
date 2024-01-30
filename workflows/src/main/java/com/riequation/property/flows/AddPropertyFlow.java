@@ -69,10 +69,13 @@ public class AddPropertyFlow extends FlowLogic<UniqueIdentifier> {
         // Generate a unique identifier for the property
         UniqueIdentifier propertyLinearId = new UniqueIdentifier();
 
+        // Initialize currentContractId as null when first creating the property
+        UniqueIdentifier currentContractId = null;
+
         // Create the output state with new fields
         PropertyState outputState = new PropertyState(propertyDetails, ownerId, getOurIdentity(), propertyLinearId,
                 address, pincode, price, ownerName, sqrtFeet, amenities,
-                propertyType, bhkInfo, description);
+                propertyType, bhkInfo, description, currentContractId);
 
         // Build the transaction
         TransactionBuilder txBuilder = new TransactionBuilder(notary)

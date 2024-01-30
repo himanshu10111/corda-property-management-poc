@@ -38,6 +38,10 @@ public class PropertyContract implements Contract {
         if (outputState.getPropertyDetails().trim().isEmpty())
             throw new IllegalArgumentException("Property details cannot be empty");
 
+        if (outputState.getCurrentContractId() != null)
+            throw new IllegalArgumentException("Current contract ID must be null for a new property");
+
+
         // Additional validations for the new fields
         validatePropertyState(outputState);
     }

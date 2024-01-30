@@ -4,10 +4,10 @@ import co.paralleluniverse.fibers.Suspendable;
 import com.riequation.property.contracts.OwnerAgentPropertyContract;
 import com.riequation.property.states.OwnerAgentPropertyContractState;
 import com.riequation.property.states.OwnerState;
-import com.riequation.property.states.AgentState;
 import com.riequation.property.states.PropertyState;
 import net.corda.core.contracts.Command;
 import net.corda.core.contracts.ContractState;
+import net.corda.core.contracts.StateAndRef;
 import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.flows.*;
 import net.corda.core.identity.Party;
@@ -16,11 +16,10 @@ import net.corda.core.node.services.vault.QueryCriteria;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.core.utilities.ProgressTracker;
-import net.corda.core.contracts.StateAndRef;
-
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @InitiatingFlow
 @StartableByRPC
@@ -58,6 +57,7 @@ public class CreateOwnerAgentPropertyContractFlow extends FlowLogic<UniqueIdenti
     @Suspendable
     @Override
     public UniqueIdentifier call() throws FlowException {
+        // Validate the owner and property registration
         validateRegisteredEntities(ownerId, propertyId);
 
         // Validate the agent ID against the provided list of valid agent IDs
@@ -65,30 +65,33 @@ public class CreateOwnerAgentPropertyContractFlow extends FlowLogic<UniqueIdenti
             throw new FlowException("Agent not found or not registered");
         }
 
+        // Check if the property is already assigned to another agent during the specified period
+        if (isPropertyAlreadyAssigned(propertyId, startDate, endDate)) {
+            throw new FlowException("Property is already assigned to another agent during this period");
+        }
+
         // Obtain a reference to the notary
         Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
 
-        // Creating the output state
-        OwnerAgentPropertyContractState outputState = new OwnerAgentPropertyContractState(ownerId, agentId, propertyId,
-                startDate, endDate, contractDetails,
+        // Create the output state
+        OwnerAgentPropertyContractState outputState = new OwnerAgentPropertyContractState(
+                ownerId, agentId, propertyId, startDate, endDate, contractDetails,
                 status, new UniqueIdentifier(),
                 Arrays.asList(getOurIdentity()));
 
-        // Building the transaction
+        // Build the transaction
         TransactionBuilder txBuilder = new TransactionBuilder(notary)
                 .addOutputState(outputState, OwnerAgentPropertyContract.ID)
                 .addCommand(new Command<>(new OwnerAgentPropertyContract.Commands.Create(), getOurIdentity().getOwningKey()));
 
-        // Verifying the transaction
+        // Verify and sign the transaction
         txBuilder.verify(getServiceHub());
-
-        // Signing the transaction
         SignedTransaction signedTx = getServiceHub().signInitialTransaction(txBuilder);
 
-        // Finalizing the transaction
+        // Finalize the transaction
         subFlow(new FinalityFlow(signedTx, Arrays.asList()));
 
-        // Returning the UniqueIdentifier of the created OwnerAgentPropertyContractState
+        // Return the linear ID of the created state
         return outputState.getLinearId();
     }
 
@@ -108,5 +111,20 @@ public class CreateOwnerAgentPropertyContractFlow extends FlowLogic<UniqueIdenti
                 null);
         List<StateAndRef<T>> results = getServiceHub().getVaultService().queryBy(entityClass, criteria).getStates();
         return !results.isEmpty();
+    }
+
+    private boolean isPropertyAlreadyAssigned(UniqueIdentifier propertyId, Date startDate, Date endDate) {
+        QueryCriteria criteria = new QueryCriteria.LinearStateQueryCriteria(null, null, Vault.StateStatus.UNCONSUMED, null);
+        List<StateAndRef<OwnerAgentPropertyContractState>> contractStates = getServiceHub().getVaultService()
+                .queryBy(OwnerAgentPropertyContractState.class, criteria)
+                .getStates();
+
+        return contractStates.stream()
+                .anyMatch(state -> {
+                    OwnerAgentPropertyContractState contract = state.getState().getData();
+                    return contract.getPropertyId().equals(propertyId)
+                            && !contract.getEndDate().before(startDate)
+                            && !contract.getStartDate().after(endDate);
+                });
     }
 }
