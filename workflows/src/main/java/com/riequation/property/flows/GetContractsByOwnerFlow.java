@@ -11,10 +11,9 @@ import net.corda.core.flows.InitiatingFlow;
 import net.corda.core.flows.StartableByRPC;
 import net.corda.core.node.services.Vault;
 import net.corda.core.node.services.vault.QueryCriteria;
-import java.util.Collections;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.UUID;
 
 @InitiatingFlow
 @StartableByRPC
@@ -28,17 +27,18 @@ public class GetContractsByOwnerFlow extends FlowLogic<List<OwnerAgentPropertyCo
     @Suspendable
     @Override
     public List<OwnerAgentPropertyContractState> call() throws FlowException {
-        UUID ownerUUID = ownerId.getId();
+        // Query for all unconsumed OwnerAgentPropertyContractState states
         QueryCriteria generalCriteria = new QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED);
-        QueryCriteria criteria = new QueryCriteria.LinearStateQueryCriteria(null, Collections.singletonList(ownerUUID))
-                .and(generalCriteria);
 
-        return getServiceHub().getVaultService()
-                .queryBy(OwnerAgentPropertyContractState.class, criteria)
-                .getStates()
-                .stream()
+        List<StateAndRef<OwnerAgentPropertyContractState>> states = getServiceHub().getVaultService()
+                .queryBy(OwnerAgentPropertyContractState.class, generalCriteria)
+                .getStates();
+
+        // Filter the states to only include those where the ownerId matches
+        return states.stream()
                 .map(StateAndRef::getState)
                 .map(TransactionState::getData)
+                .filter(contractState -> contractState.getOwnerId().equals(ownerId))
                 .collect(Collectors.toList());
     }
 }

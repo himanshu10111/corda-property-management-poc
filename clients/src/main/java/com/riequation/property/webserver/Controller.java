@@ -486,6 +486,64 @@ public class Controller {
         }
     }
 
+
+//    ------------------------------- Contract details api------------------------
+
+
+//    @GetMapping("/by-entity")
+//    public ResponseEntity<List<OwnerAgentPropertyContractState>> getContractsByEntity(@RequestParam("entityId") String entityIdString, @RequestParam("entityType") String entityType) {
+//        try {
+//            UniqueIdentifier entityId = UniqueIdentifier.Companion.fromString(entityIdString);
+//            List<OwnerAgentPropertyContractState> contracts;
+//
+//            if ("owner".equalsIgnoreCase(entityType)) {
+//                contracts = proxy.startTrackedFlowDynamic(GetContractsByOwnerFlow.class, entityId)
+//                        .getReturnValue()
+//                        .get();
+//            } else if ("agent".equalsIgnoreCase(entityType)) {
+//                contracts = proxy.startTrackedFlowDynamic(GetContractsByAgentFlow.class, entityId)
+//                        .getReturnValue()
+//                        .get();
+//            } else {
+//                return ResponseEntity.badRequest().body(null); // Invalid entity type
+//            }
+//
+//            return ResponseEntity.ok(contracts);
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(null); // Return an appropriate error response
+//        }
+//    }
+
+
+    @GetMapping("/contracts/owner")
+    public ResponseEntity<List<OwnerAgentPropertyContractState>> getconatractsByOwner(@RequestParam("ownerId") String ownerIdString) {
+        try {
+            UniqueIdentifier ownerId = UniqueIdentifier.Companion.fromString(ownerIdString);
+            List<OwnerAgentPropertyContractState> contracts = proxy.startTrackedFlowDynamic(GetContractsByOwnerFlow.class, ownerId)
+                    .getReturnValue()
+                    .get();
+
+            return ResponseEntity.ok(contracts);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Return an error response
+        }
+    }
+
+
+    @GetMapping("/contracts/agent")
+    public ResponseEntity<List<OwnerAgentPropertyContractState>> getContractsByAgent(@RequestParam("agentId") String agentIdString) {
+        try {
+            UniqueIdentifier agentId = UniqueIdentifier.Companion.fromString(agentIdString);
+            List<OwnerAgentPropertyContractState> contracts = proxy.startTrackedFlowDynamic(GetContractsByAgentFlow.class, agentId)
+                    .getReturnValue()
+                    .get();
+
+            return ResponseEntity.ok(contracts);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Return an error response
+        }
+    }
+
 }
 
 
