@@ -14,6 +14,7 @@ import net.corda.core.messaging.CordaRPCOps;
 import net.corda.core.node.NodeInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,6 +119,31 @@ public class Controller {
         }
     }
 
+    @GetMapping(value = "/get-owner/{linearIdStr}", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getOwner(@PathVariable String linearIdStr) {
+        try {
+            UniqueIdentifier linearId = UniqueIdentifier.Companion.fromString(linearIdStr);
+
+            OwnerState ownerState = proxy.startTrackedFlowDynamic(
+                    GetOwnerFlow.class, linearId
+            ).getReturnValue().get();
+
+            JSONObject responseJson = new JSONObject();
+            responseJson.put("name", ownerState.getName());
+            responseJson.put("email", ownerState.getEmail());
+            responseJson.put("mobileNumber", ownerState.getMobileNumber());
+            responseJson.put("address", ownerState.getAddress());
+            // Note: Password is intentionally excluded for security reasons
+
+            return ResponseEntity.status(HttpStatus.OK).body(responseJson.toString());
+        } catch (Exception e) {
+            JSONObject errorJson = new JSONObject();
+            errorJson.put("error", "Error retrieving owner: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorJson.toString());
+        }
+    }
+
+
 
 //    ------------------------------- Owner Property Api...........................
 
@@ -194,6 +220,24 @@ public class Controller {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping(value = "/get-property/{linearIdStr}", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<PropertyState> getPropertyById(@PathVariable String linearIdStr) {
+        try {
+            UniqueIdentifier linearId = UniqueIdentifier.Companion.fromString(linearIdStr);
+
+            PropertyState property = proxy.startTrackedFlowDynamic(
+                    GetPropertyFlow.class, linearId
+            ).getReturnValue().get();
+
+            return new ResponseEntity<>(property, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("Error retrieving property by ID: " + linearIdStr, e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 
 
 //    ------------------------------------ Agent Api -------------------------------------
@@ -399,6 +443,33 @@ public class Controller {
             return null;
         }
     }
+
+
+    @GetMapping(value = "/get-agent/{linearIdStr}", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getAgent(@PathVariable String linearIdStr) {
+        try {
+            UniqueIdentifier linearId = UniqueIdentifier.Companion.fromString(linearIdStr);
+
+            AgentState agentState = proxy.startTrackedFlowDynamic(
+                    GetAgentFlow.class, linearId
+            ).getReturnValue().get();
+
+            JSONObject responseJson = new JSONObject();
+            responseJson.put("name", agentState.getName());
+            responseJson.put("email", agentState.getEmail());
+            // Exclude the password for security reasons
+            responseJson.put("mobileNumber", agentState.getMobileNumber());
+            responseJson.put("address", agentState.getAddress());
+            responseJson.put("linearId", agentState.getLinearId().toString());
+
+            return ResponseEntity.status(HttpStatus.OK).body(responseJson.toString());
+        } catch (Exception e) {
+            JSONObject errorJson = new JSONObject();
+            errorJson.put("error", "Error retrieving agent: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorJson.toString());
+        }
+    }
+
 //    ---------------------------------------- Tentant Api----------------------------------
 
 
@@ -439,6 +510,31 @@ public class Controller {
         }
     }
 
+
+    @GetMapping(value = "/get-tenant/{linearIdStr}", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getTenant(@PathVariable String linearIdStr) {
+        try {
+            UniqueIdentifier linearId = UniqueIdentifier.Companion.fromString(linearIdStr);
+
+            TenantState tenantState = proxy.startTrackedFlowDynamic(
+                    GetTenantFlow.class, linearId
+            ).getReturnValue().get();
+
+            JSONObject responseJson = new JSONObject();
+            responseJson.put("name", tenantState.getName());
+            responseJson.put("email", tenantState.getEmail());
+            // Exclude the password for security reasons
+            responseJson.put("mobileNumber", tenantState.getMobileNumber());
+            responseJson.put("address", tenantState.getAddress());
+            responseJson.put("linearId", tenantState.getLinearId().toString());
+
+            return ResponseEntity.status(HttpStatus.OK).body(responseJson.toString());
+        } catch (Exception e) {
+            JSONObject errorJson = new JSONObject();
+            errorJson.put("error", "Error retrieving tenant: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorJson.toString());
+        }
+    }
 
     @PostMapping(value = "/login-tentant", consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> loginTentent(@RequestBody Map<String, String> params) {
