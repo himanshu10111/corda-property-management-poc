@@ -3,9 +3,7 @@ package com.riequation.property.webserver;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.riequation.property.flows.*;
 import com.riequation.property.states.*;
-import com.riequation.property.webserver.Dto.AgentStateDTO;
-import com.riequation.property.webserver.Dto.OwnerStateDTO;
-import com.riequation.property.webserver.Dto.TenantStateDTO;
+import com.riequation.property.webserver.Dto.*;
 import net.corda.client.jackson.JacksonSupport;
 import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.identity.CordaX500Name;
@@ -18,6 +16,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ParameterizedTypeReference;
@@ -31,6 +30,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,6 +46,8 @@ public class Controller {
     private final CordaRPCOps proxy;
     private final CordaX500Name me;
 
+    @Autowired
+    private PropertyIdFetcher propertyIdFetcher;
     private final RestTemplate restTemplate = new RestTemplate();
     public Controller(NodeRPCConnection rpc) {
         this.proxy = rpc.proxy;
@@ -342,7 +344,33 @@ public class Controller {
         }
     }
 
+    @GetMapping(value = "/agent-owner-contracts", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Map<String, Object>>> getAllContracts() {
+        try {
+            // Step 2 & 3: Fetching all contract states from the vault
+            List<StateAndRef<OwnerAgentPropertyContractState>> contracts = proxy.vaultQuery(OwnerAgentPropertyContractState.class).getStates();
 
+            // Step 4: Transforming the results
+            List<Map<String, Object>> contractDetailsList = contracts.stream().map(stateAndRef -> {
+                OwnerAgentPropertyContractState state = stateAndRef.getState().getData();
+                Map<String, Object> details = new HashMap<>();
+                details.put("ownerId", state.getOwnerId().toString());
+                details.put("agentId", state.getAgentId().toString());
+                details.put("propertyId", state.getPropertyId().toString());
+                details.put("startDate", state.getStartDate().toString());
+                details.put("endDate", state.getEndDate().toString());
+                details.put("contractDetails", state.getContractDetails());
+                details.put("status", state.getStatus());
+                details.put("linearId", state.getLinearId().toString());
+                return details;
+            }).collect(Collectors.toList());
+
+            // Step 5: Return the response
+            return ResponseEntity.ok(contractDetailsList);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
 
 
 
@@ -640,7 +668,110 @@ public class Controller {
         }
     }
 
+
+
+//    -------------------------------- Maintaince Api -------------------------
+
+    @PostMapping(value = "/create-maintenance", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> createMaintenance(@RequestBody Map<String, Object> maintenanceDetails) {
+        try {
+            // Fetch and validate property ID
+            List<UniqueIdentifier> validPropertyIds = propertyIdFetcher.fetchPropertyIds();
+            UniqueIdentifier propertyId = UniqueIdentifier.Companion.fromString((String) maintenanceDetails.get("propertyId"));
+            if (!validPropertyIds.contains(propertyId)) {
+                return ResponseEntity.badRequest().body("Invalid property ID: " + propertyId);
+            }
+
+            // Extract other details from the maintenanceDetails map
+            UniqueIdentifier agentId = UniqueIdentifier.Companion.fromString((String) maintenanceDetails.get("agentId"));
+            String details = (String) maintenanceDetails.get("details");
+            Date maintenanceDate = Date.from(Instant.parse((String) maintenanceDetails.get("maintenanceDate")));
+            String status = (String) maintenanceDetails.get("status");
+            Double estimatedCost = ((BigDecimal) maintenanceDetails.get("estimatedCost")).doubleValue();
+            String priority = (String) maintenanceDetails.get("priority");
+            String type = (String) maintenanceDetails.get("type");
+            String workDescription = (String) maintenanceDetails.get("workDescription");
+            UniqueIdentifier contractId = UniqueIdentifier.Companion.fromString((String) maintenanceDetails.get("contractId"));
+
+            // Start the maintenance creation flow
+            UniqueIdentifier id = proxy.startTrackedFlowDynamic(
+                    CreateMaintenanceFlow.class,
+                    propertyId,
+                    agentId,
+                    details,
+                    maintenanceDate,
+                    status,
+                    estimatedCost,
+                    priority,
+                    type,
+                    workDescription,
+                    contractId,
+                    validPropertyIds
+            ).getReturnValue().get();
+
+            return ResponseEntity.status(HttpStatus.CREATED).body("Maintenance task created with ID: " + id.toString());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error creating maintenance task: " + e.getMessage());
+        }
+    }
+
+
+
+
+//    @GetMapping(value = "/maintenance-history/{propertyId}", produces = APPLICATION_JSON_VALUE)
+//    public ResponseEntity<?> getMaintenanceHistory(@PathVariable String propertyId) {
+//        try {
+//            UniqueIdentifier propId = UniqueIdentifier.Companion.fromString(propertyId);
+//            List<MaintenanceState> maintenanceHistory = proxy.startTrackedFlowDynamic(
+//                            GetMaintenanceHistoryFlow.class, propId
+//                    ).getReturnValue().get()
+//                    .stream()
+//                    .collect(Collectors.toList());
+//
+//            if (maintenanceHistory.isEmpty()) {
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No maintenance history found for property ID: " + propertyId);
+//            }
+//
+//            return new ResponseEntity<>(maintenanceHistory, HttpStatus.OK);
+//        } catch (Exception e) {
+//            // Log the error or handle it as appropriate
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving maintenance history: " + e.getMessage());
+//        }
+//    }
+
+
+//    ---------------------------- test Code--------------------
+
+    @GetMapping("/properties/ids")
+    public ResponseEntity<List<UniqueIdentifier>> getPropertyIds() {
+        try {
+            PropertyIdFetcher idFetcher = new PropertyIdFetcher(restTemplate);
+            List<UniqueIdentifier> propertyIds = idFetcher.fetchPropertyIds();
+            return ResponseEntity.ok(propertyIds);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
+    @GetMapping("/contracts/ids")
+    public ResponseEntity<List<UniqueIdentifier>> getContractIds() {
+        try {
+            ContractIdFetcher idFetcher = new ContractIdFetcher(restTemplate);
+            List<UniqueIdentifier> contractIds = idFetcher.fetchContractIds();
+            return ResponseEntity.ok(contractIds);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
 }
+
+
+
 
 
 
