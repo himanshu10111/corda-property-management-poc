@@ -3,6 +3,7 @@ package com.riequation.property.webserver.Dto;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import net.corda.core.contracts.UniqueIdentifier;
 
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Component
 public class ContractIdFetcher {
 
     private final RestTemplate restTemplate;

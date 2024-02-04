@@ -48,6 +48,11 @@ public class Controller {
 
     @Autowired
     private PropertyIdFetcher propertyIdFetcher;
+
+    @Autowired
+    private  ContractIdFetcher contractIdFetcher;
+
+
     private final RestTemplate restTemplate = new RestTemplate();
     public Controller(NodeRPCConnection rpc) {
         this.proxy = rpc.proxy;
@@ -158,12 +163,12 @@ public class Controller {
             // Parsing the owner's UniqueIdentifier from the provided ownerId string
             UniqueIdentifier ownerUniqueId = UniqueIdentifier.Companion.fromString(ownerId);
 
-            // Parse other fields correctly, handling BigDecimal and List types
+            // Since price and sqrtFeet are now String, you should directly cast them.
             String address = (String) propertyDetails.get("address");
             String pincode = (String) propertyDetails.get("pincode");
-            Double price = ((BigDecimal) propertyDetails.get("price")).doubleValue();
+            String price = propertyDetails.get("price").toString(); // Converted directly to String
             String ownerName = (String) propertyDetails.get("ownerName");
-            Double sqrtFeet = ((BigDecimal) propertyDetails.get("sqrtFeet")).doubleValue();
+            String sqrtFeet = propertyDetails.get("sqrtFeet").toString(); // Converted directly to String
 
             // Handle amenities as a List
             @SuppressWarnings("unchecked")
@@ -179,9 +184,12 @@ public class Controller {
                     ownerName, sqrtFeet, amenities, propertyType, bhkInfo, description
             ).getReturnValue().get();
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("Property added with ID: " + id.toString());
+            // Modifying the response to return a JSON object with a message
+            String jsonResponse = String.format("{\"message\":\"Property added with ID: %s\"}", id.toString());
+            return ResponseEntity.status(HttpStatus.CREATED).body(jsonResponse);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error adding property: " + e.getMessage());
+            String errorResponse = String.format("{\"message\":\"Error adding property: %s\"}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
@@ -682,6 +690,13 @@ public class Controller {
                 return ResponseEntity.badRequest().body("Invalid property ID: " + propertyId);
             }
 
+            // Fetch and validate contract ID
+            List<UniqueIdentifier> validContractIds = contractIdFetcher.fetchContractIds();
+            UniqueIdentifier contractId = UniqueIdentifier.Companion.fromString((String) maintenanceDetails.get("contractId"));
+            if (!validContractIds.contains(contractId)) {
+                return ResponseEntity.badRequest().body("Invalid contract ID: " + contractId);
+            }
+
             // Extract other details from the maintenanceDetails map
             UniqueIdentifier agentId = UniqueIdentifier.Companion.fromString((String) maintenanceDetails.get("agentId"));
             String details = (String) maintenanceDetails.get("details");
@@ -691,7 +706,6 @@ public class Controller {
             String priority = (String) maintenanceDetails.get("priority");
             String type = (String) maintenanceDetails.get("type");
             String workDescription = (String) maintenanceDetails.get("workDescription");
-            UniqueIdentifier contractId = UniqueIdentifier.Companion.fromString((String) maintenanceDetails.get("contractId"));
 
             // Start the maintenance creation flow
             UniqueIdentifier id = proxy.startTrackedFlowDynamic(
@@ -706,7 +720,8 @@ public class Controller {
                     type,
                     workDescription,
                     contractId,
-                    validPropertyIds
+                    validPropertyIds,
+                    validContractIds
             ).getReturnValue().get();
 
             return ResponseEntity.status(HttpStatus.CREATED).body("Maintenance task created with ID: " + id.toString());

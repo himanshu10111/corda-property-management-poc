@@ -45,7 +45,6 @@ public class PropertyContract implements Contract {
         // Additional validations for the new fields
         validatePropertyState(outputState);
     }
-
     private void validatePropertyState(PropertyState state) {
         if (state.getAddress().trim().isEmpty())
             throw new IllegalArgumentException("Address cannot be empty");
@@ -53,14 +52,28 @@ public class PropertyContract implements Contract {
         if (state.getPincode().trim().isEmpty())
             throw new IllegalArgumentException("Pincode cannot be empty");
 
-        if (state.getPrice() == null || state.getPrice() <= 0)
-            throw new IllegalArgumentException("Price must be a positive value");
+        // Price validation
+        try {
+            double priceValue = Double.parseDouble(state.getPrice());
+            if (priceValue <= 0) {
+                throw new IllegalArgumentException("Price must be a positive value");
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Price must be a valid number");
+        }
 
         if (state.getOwnerName().trim().isEmpty())
             throw new IllegalArgumentException("Owner name cannot be empty");
 
-        if (state.getSqrtFeet() == null || state.getSqrtFeet() <= 0)
-            throw new IllegalArgumentException("Square feet must be a positive value");
+        // Square feet validation
+        try {
+            double sqrtFeetValue = Double.parseDouble(state.getSqrtFeet());
+            if (sqrtFeetValue <= 0) {
+                throw new IllegalArgumentException("Square feet must be a positive value");
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Square feet must be a valid number");
+        }
 
         if (state.getAmenities() == null || state.getAmenities().isEmpty())
             throw new IllegalArgumentException("Amenities list cannot be empty");

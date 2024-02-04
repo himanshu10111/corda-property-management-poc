@@ -18,9 +18,9 @@ public class PropertyState implements LinearState {
     // Existing fields
     private final String address;
     private final String pincode;
-    private final Double price;
+    private final String price; // Changed to String
     private final String ownerName;
-    private final Double sqrtFeet;
+    private final String sqrtFeet; // Changed to String
     private final List<String> amenities;
     private final String propertyType;
     private final String bhkInfo;
@@ -31,7 +31,7 @@ public class PropertyState implements LinearState {
 
     // Updated constructor with new field
     public PropertyState(String propertyDetails, UniqueIdentifier ownerId, AbstractParty host, UniqueIdentifier linearId,
-                         String address, String pincode, Double price, String ownerName, Double sqrtFeet, List<String> amenities,
+                         String address, String pincode, String price, String ownerName, String sqrtFeet, List<String> amenities,
                          String propertyType, String bhkInfo, String description, UniqueIdentifier currentContractId) {
         this.propertyDetails = propertyDetails;
         this.ownerId = ownerId;
@@ -39,14 +39,14 @@ public class PropertyState implements LinearState {
         this.linearId = linearId;
         this.address = address;
         this.pincode = pincode;
-        this.price = price;
+        this.price = price; // Initialize with String
         this.ownerName = ownerName;
-        this.sqrtFeet = sqrtFeet;
+        this.sqrtFeet = sqrtFeet; // Initialize with String
         this.amenities = amenities;
         this.propertyType = propertyType;
         this.bhkInfo = bhkInfo;
         this.description = description;
-        this.currentContractId = currentContractId; // Initialize the new field
+        this.currentContractId = currentContractId;
     }
 
     // Getters for all fields
@@ -56,14 +56,14 @@ public class PropertyState implements LinearState {
     public UniqueIdentifier getLinearId() { return linearId; }
     public String getAddress() { return address; }
     public String getPincode() { return pincode; }
-    public Double getPrice() { return price; }
+    public String getPrice() { return price; } // Return type changed to String
     public String getOwnerName() { return ownerName; }
-    public Double getSqrtFeet() { return sqrtFeet; }
+    public String getSqrtFeet() { return sqrtFeet; } // Return type changed to String
     public List<String> getAmenities() { return amenities; }
     public String getPropertyType() { return propertyType; }
     public String getBhkInfo() { return bhkInfo; }
     public String getDescription() { return description; }
-    public UniqueIdentifier getCurrentContractId() { return currentContractId; } // Getter for the new field
+    public UniqueIdentifier getCurrentContractId() { return currentContractId; }
 
     @Override
     public List<AbstractParty> getParticipants() {

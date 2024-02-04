@@ -24,9 +24,9 @@ public class AddPropertyFlow extends FlowLogic<UniqueIdentifier> {
     private final UniqueIdentifier ownerId;
     private final String address;
     private final String pincode;
-    private final Double price;
+    private final String price; // Modified to String
     private final String ownerName;
-    private final Double sqrtFeet;
+    private final String sqrtFeet; // Modified to String
     private final List<String> amenities;
     private final String propertyType;
     private final String bhkInfo;
@@ -35,15 +35,15 @@ public class AddPropertyFlow extends FlowLogic<UniqueIdentifier> {
     private final ProgressTracker progressTracker = new ProgressTracker();
 
     public AddPropertyFlow(String propertyDetails, UniqueIdentifier ownerId, String address, String pincode,
-                           Double price, String ownerName, Double sqrtFeet, List<String> amenities,
+                           String price, String ownerName, String sqrtFeet, List<String> amenities,
                            String propertyType, String bhkInfo, String description) {
         this.propertyDetails = propertyDetails;
         this.ownerId = ownerId;
         this.address = address;
         this.pincode = pincode;
-        this.price = price;
+        this.price = price; // Accepting price as String
         this.ownerName = ownerName;
-        this.sqrtFeet = sqrtFeet;
+        this.sqrtFeet = sqrtFeet; // Accepting square feet as String
         this.amenities = amenities;
         this.propertyType = propertyType;
         this.bhkInfo = bhkInfo;
@@ -90,6 +90,7 @@ public class AddPropertyFlow extends FlowLogic<UniqueIdentifier> {
 
         // Finalize the transaction
         subFlow(new FinalityFlow(signedTx, Collections.emptyList()));
+
         return propertyLinearId;
     }
 
