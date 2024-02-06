@@ -730,56 +730,28 @@ public class Controller {
         }
     }
 
+    @GetMapping("/get-maintenance/{propertyId}")
+    public ResponseEntity<List<MaintenanceState>> getMaintenanceDetailsByPropertyId(@PathVariable String propertyId) {
+        List<StateAndRef<MaintenanceState>> states = proxy.vaultQuery(MaintenanceState.class).getStates();
+        List<MaintenanceState> filteredStates = states.stream()
+                .map(StateAndRef::getState)
+                .map(TransactionState::getData)
+                .filter(state -> state.getPropertyId().getId().toString().equals(propertyId))
+                .collect(Collectors.toList());
 
-
-
-//    @GetMapping(value = "/maintenance-history/{propertyId}", produces = APPLICATION_JSON_VALUE)
-//    public ResponseEntity<?> getMaintenanceHistory(@PathVariable String propertyId) {
-//        try {
-//            UniqueIdentifier propId = UniqueIdentifier.Companion.fromString(propertyId);
-//            List<MaintenanceState> maintenanceHistory = proxy.startTrackedFlowDynamic(
-//                            GetMaintenanceHistoryFlow.class, propId
-//                    ).getReturnValue().get()
-//                    .stream()
-//                    .collect(Collectors.toList());
-//
-//            if (maintenanceHistory.isEmpty()) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No maintenance history found for property ID: " + propertyId);
-//            }
-//
-//            return new ResponseEntity<>(maintenanceHistory, HttpStatus.OK);
-//        } catch (Exception e) {
-//            // Log the error or handle it as appropriate
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving maintenance history: " + e.getMessage());
-//        }
-//    }
-
-
-//    ---------------------------- test Code--------------------
-
-    @GetMapping("/properties/ids")
-    public ResponseEntity<List<UniqueIdentifier>> getPropertyIds() {
-        try {
-            PropertyIdFetcher idFetcher = new PropertyIdFetcher(restTemplate);
-            List<UniqueIdentifier> propertyIds = idFetcher.fetchPropertyIds();
-            return ResponseEntity.ok(propertyIds);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+        return ResponseEntity.ok(filteredStates);
     }
 
+    @GetMapping("/get-maintenance-by/{agentId}")
+    public ResponseEntity<List<MaintenanceState>> getMaintenanceDetailsByAgentId(@PathVariable String agentId) {
+        List<StateAndRef<MaintenanceState>> states = proxy.vaultQuery(MaintenanceState.class).getStates();
+        List<MaintenanceState> filteredStates = states.stream()
+                .map(StateAndRef::getState)
+                .map(TransactionState::getData)
+                .filter(state -> state.getAgentId().getId().toString().equals(agentId))
+                .collect(Collectors.toList());
 
-    @GetMapping("/contracts/ids")
-    public ResponseEntity<List<UniqueIdentifier>> getContractIds() {
-        try {
-            ContractIdFetcher idFetcher = new ContractIdFetcher(restTemplate);
-            List<UniqueIdentifier> contractIds = idFetcher.fetchContractIds();
-            return ResponseEntity.ok(contractIds);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ResponseEntity.ok(filteredStates);
     }
 
 
