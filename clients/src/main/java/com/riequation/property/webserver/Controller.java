@@ -10,6 +10,7 @@ import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
 import net.corda.core.messaging.CordaRPCOps;
 import net.corda.core.node.NodeInfo;
+import net.corda.core.transactions.SignedTransaction;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.json.simple.JSONArray;
@@ -33,6 +34,8 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -754,6 +757,57 @@ public class Controller {
         return ResponseEntity.ok(filteredStates);
     }
 
+//    ------------------------  Change password Api ------------------------------
+
+    @PostMapping(value = "/change-password", produces = "application/json", consumes = "application/json")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
+        try {
+            proxy.startFlowDynamic(
+                            ChangeOwnerPasswordFlow.class,
+                            request.getOwnerId(),
+                            request.getNewPassword(),
+                            request.getConfirmPassword())
+                    .getReturnValue().get();
+            return ResponseEntity.ok().body("{\"status\":\"Password Change Successfully..\"}");
+        } catch (Exception e) {
+            logger.error("Error changing password: ", e);
+            return ResponseEntity.badRequest().body("{\"error\":\"" + e.getMessage() + "\"}");
+        }
+    }
+
+    @PostMapping(value = "/change-agent-password", produces = "application/json", consumes = "application/json")
+    public ResponseEntity<?> changeAgentPassword(@RequestBody AgentPasswordRequest request) {
+        try {
+            proxy.startFlowDynamic(
+                            ChangeAgentPasswordFlow.class,
+                            request.getId(), // Assuming this is the unique identifier (UUID string) for the agent
+                            request.getNewPassword(),
+                            request.getConfirmPassword())
+                    .getReturnValue().get();
+            return ResponseEntity.ok().body("{\"status\":\"Password Change Successfully..\"}");
+        } catch (Exception e) {
+            logger.error("Error changing agent password: ", e);
+            return ResponseEntity.badRequest().body("{\"error\":\"" + e.getMessage() + "\"}");
+        }
+    }
+
+
+    @PostMapping(value = "/change-tenant-password", produces = "application/json", consumes = "application/json")
+    public ResponseEntity<?> changeTenantPassword(@RequestBody AgentPasswordRequest request) {
+        try {
+            proxy.startFlowDynamic(
+                            ChangeTenantPasswordFlow.class,
+                            request.getId(), // Assuming this is the unique identifier (UUID string) for the tenant
+                            request.getNewPassword(),
+                            request.getConfirmPassword())
+                    .getReturnValue().get();
+            return ResponseEntity.ok().body("{\"status\":\"Password Change Successfully..\"}");
+        } catch (Exception e) {
+            // Assuming a logger is configured
+            // logger.error("Error changing tenant password: ", e);
+            return ResponseEntity.badRequest().body("{\"error\":\"" + e.getMessage() + "\"}");
+        }
+    }
 
 }
 

@@ -1,8 +1,11 @@
 package com.riequation.property.webserver;
 
 import io.jsonwebtoken.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+
 import java.util.Date;
 
+@CrossOrigin(origins = "*")
 public class JwtUtil {
 
     private static final String SECRET_KEY = "riequation";

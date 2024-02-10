@@ -6,6 +6,7 @@ import net.corda.core.messaging.CordaRPCOps;
 import net.corda.core.utilities.NetworkHostAndPort;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -16,6 +17,7 @@ import javax.annotation.PreDestroy;
  * The RPC connection is configured using command line arguments.
  */
 @Component
+@CrossOrigin(origins = "*")
 public class NodeRPCConnection implements AutoCloseable {
     // The host of the node we are connecting to.
     @Value("${config.rpc.host}")

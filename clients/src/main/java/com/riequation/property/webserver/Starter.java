@@ -4,6 +4,7 @@ import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import static org.springframework.boot.WebApplicationType.SERVLET;
 
@@ -12,6 +13,7 @@ import static org.springframework.boot.WebApplicationType.SERVLET;
  */
 @SpringBootApplication
 @ComponentScan(basePackages = "com.riequation.property")
+@CrossOrigin(origins = "*")
 public class Starter {
     /**
      * Starts our Spring Boot application.

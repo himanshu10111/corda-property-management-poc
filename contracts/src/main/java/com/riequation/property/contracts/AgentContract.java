@@ -4,7 +4,6 @@ import com.riequation.property.states.AgentState;
 import net.corda.core.contracts.CommandData;
 import net.corda.core.contracts.Contract;
 import net.corda.core.transactions.LedgerTransaction;
-import java.util.List;
 
 public class AgentContract implements Contract {
     public static final String ID = "com.riequation.property.contracts.AgentContract";
@@ -17,8 +16,9 @@ public class AgentContract implements Contract {
         CommandData command = tx.getCommand(0).getValue();
 
         if (command instanceof Commands.Register) {
-            // Registration-specific constraints
             verifyRegister(tx);
+        } else if (command instanceof Commands.Update) {
+            verifyUpdate(tx);
         } else {
             throw new IllegalArgumentException("Unrecognized command");
         }
@@ -48,7 +48,28 @@ public class AgentContract implements Contract {
             throw new IllegalArgumentException("Address cannot be empty");
     }
 
+
+    private void verifyUpdate(LedgerTransaction tx) {
+        if (tx.getInputStates().size() != 1 || tx.getOutputStates().size() != 1)
+            throw new IllegalArgumentException("Update transaction must have exactly one input and one output");
+
+        AgentState inputState = (AgentState) tx.getInputStates().get(0);
+        AgentState outputState = (AgentState) tx.getOutputStates().get(0);
+
+        // Verify that non-password fields are unchanged
+        if (!inputState.getName().equals(outputState.getName()) ||
+                !inputState.getEmail().equals(outputState.getEmail()) ||
+                !inputState.getMobileNumber().equals(outputState.getMobileNumber()) ||
+                !inputState.getAddress().equals(outputState.getAddress()) ||
+                !inputState.getHost().equals(outputState.getHost())) {
+            throw new IllegalArgumentException("Only the password field can be updated");
+        }
+
+
+    }
+
     public interface Commands extends CommandData {
         class Register implements Commands {}
+        class Update implements Commands {}
     }
 }

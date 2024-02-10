@@ -16,8 +16,9 @@ public class TenantContract implements Contract {
         CommandData command = tx.getCommand(0).getValue();
 
         if (command instanceof Commands.Register) {
-            // Registration-specific constraints
             verifyRegister(tx);
+        } else if (command instanceof Commands.Update) {
+            verifyUpdate(tx);
         } else {
             throw new IllegalArgumentException("Unrecognized command");
         }
@@ -47,7 +48,28 @@ public class TenantContract implements Contract {
             throw new IllegalArgumentException("Address cannot be empty");
     }
 
+
+    private void verifyUpdate(LedgerTransaction tx) {
+        if (tx.getInputStates().size() != 1 || tx.getOutputStates().size() != 1)
+            throw new IllegalArgumentException("Update transaction must have exactly one input and one output");
+
+        TenantState inputState = (TenantState) tx.getInputStates().get(0);
+        TenantState outputState = (TenantState) tx.getOutputStates().get(0);
+
+        // Verify that non-password fields are unchanged
+        if (!inputState.getName().equals(outputState.getName()) ||
+                !inputState.getEmail().equals(outputState.getEmail()) ||
+                !inputState.getMobileNumber().equals(outputState.getMobileNumber()) ||
+                !inputState.getAddress().equals(outputState.getAddress()) ||
+                !inputState.getHost().equals(outputState.getHost())) {
+            throw new IllegalArgumentException("Only the password field can be updated");
+        }
+
+        // Additional checks or validation related to the password update could go here
+    }
+
     public interface Commands extends CommandData {
         class Register implements Commands {}
+        class Update implements Commands {}
     }
 }
