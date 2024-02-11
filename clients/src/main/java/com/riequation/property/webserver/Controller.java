@@ -809,7 +809,86 @@ public class Controller {
         }
     }
 
+
+//    ----------------------- Mesage Api---------------------
+
+    @PostMapping("/create-notification")
+    public ResponseEntity<?> createMessage(@RequestBody MessageDTO dto) {
+        try {
+            // Start the CreateMessageFlow and retrieve the messageId
+            String messageId = proxy.startTrackedFlowDynamic(
+                    CreateMessageFlow.class,
+                    dto.getRefId(),
+                    dto.getMessageTemplate(),
+                    dto.getPlaceholder1(),
+                    dto.getPlaceholder2()
+            ).getReturnValue().get();
+
+            // Construct the response object
+            CreateMessageResponse response = new CreateMessageResponse(
+                    "Message created with ID: " + messageId,
+                    messageId
+            );
+
+            // Return the response object as JSON
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            // In case of error, return an appropriate error response
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new CreateMessageResponse("Failed to create message: " + e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/getByRefId/{refId}")
+    public ResponseEntity<?> getMessagesByRefId(@PathVariable String refId) {
+        try {
+            List<MessageState> states = proxy.startFlowDynamic(GetMessageByIdFlow.class, refId)
+                    .getReturnValue()
+                    .get();
+
+            // Convert the list of MessageState to a list of MessageDTO
+            List<MessageDTO> dtos = states.stream()
+                    .map(state -> new MessageDTO(
+                            state.getMessageId(), // Set messageId here
+                            state.getRefId(),
+                            state.getMessageTemplate(),
+                            state.getPlaceholder1(),
+                            state.getPlaceholder2()))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to retrieve messages: " + e.getMessage());
+        }
+    }
+
+
+
+    @DeleteMapping("/delete-message/{messageId}")
+    public ResponseEntity<String> deleteMessage(@PathVariable String messageId) {
+        try {
+            // Start the DeleteMessageFlow with the provided messageId as a String
+            proxy.startFlowDynamic(DeleteMessageFlow.class, messageId)
+                    .getReturnValue()
+                    .get(); // Wait for the flow to finish
+
+            // Return a success response
+            return ResponseEntity.ok("Message with ID " + messageId + " has been successfully deleted.");
+        } catch (InterruptedException e) {
+            // Handle interrupted exception
+            Thread.currentThread().interrupt(); // Restore the interrupted status
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Request was interrupted: " + e.getMessage());
+        } catch (ExecutionException e) {
+            // Handle exceptions from the flow
+            Throwable cause = e.getCause();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to delete message with ID " + messageId + ". Error: " + cause.getMessage());
+        }
+    }
 }
+
+
+
 
 
 
