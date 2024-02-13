@@ -757,6 +757,39 @@ public class Controller {
         return ResponseEntity.ok(filteredStates);
     }
 
+    @PostMapping(value = "/update-maintenance", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> updateMaintenance(@RequestBody Map<String, Object> maintenanceDetails) {
+        try {
+            // Extract the maintenance ID and other details from the maintenanceDetails map
+            UniqueIdentifier maintenanceId = UniqueIdentifier.Companion.fromString((String) maintenanceDetails.get("maintenanceId"));
+            String details = (String) maintenanceDetails.get("details");
+            Date maintenanceDate = Date.from(Instant.parse((String) maintenanceDetails.get("maintenanceDate"))); // Parse the maintenanceDate
+            String status = (String) maintenanceDetails.get("status");
+            Double estimatedCost = ((BigDecimal) maintenanceDetails.get("estimatedCost")).doubleValue();
+            String priority = (String) maintenanceDetails.get("priority");
+            String type = (String) maintenanceDetails.get("type");
+            String workDescription = (String) maintenanceDetails.get("workDescription");
+
+            // Start the maintenance update flow
+            proxy.startTrackedFlowDynamic(
+                    UpdateMaintenanceFlow.class,
+                    maintenanceId,
+                    details,
+                    maintenanceDate, // Include the maintenanceDate in the flow call
+                    status,
+                    estimatedCost,
+                    priority,
+                    type,
+                    workDescription
+            ).getReturnValue().get();
+
+            return ResponseEntity.status(HttpStatus.OK).body("Maintenance task updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error updating maintenance task: " + e.getMessage());
+        }
+    }
+
+
 //    ------------------------  Change password Api ------------------------------
 
     @PostMapping(value = "/change-password", produces = "application/json", consumes = "application/json")
@@ -885,6 +918,10 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to delete message with ID " + messageId + ". Error: " + cause.getMessage());
         }
     }
+
+
+
+
 }
 
 
