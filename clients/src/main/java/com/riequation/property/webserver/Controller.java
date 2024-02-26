@@ -1,6 +1,8 @@
 package com.riequation.property.webserver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.riequation.property.config.EmailService;
+import com.riequation.property.config.OTPGenerator;
 import com.riequation.property.flows.*;
 import com.riequation.property.states.*;
 import com.riequation.property.webserver.Dto.*;
@@ -10,6 +12,7 @@ import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
 import net.corda.core.messaging.CordaRPCOps;
 import net.corda.core.node.NodeInfo;
+import net.corda.core.node.services.vault.QueryCriteria;
 import net.corda.core.transactions.SignedTransaction;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -49,20 +52,29 @@ public class Controller {
     private final CordaRPCOps proxy;
     private final CordaX500Name me;
 
+    private Map<String, String> otpStorage = new HashMap<>();
+
     @Autowired
     private PropertyIdFetcher propertyIdFetcher;
 
     @Autowired
-    private  ContractIdFetcher contractIdFetcher;
+    private ContractIdFetcher contractIdFetcher;
 
+
+
+    @Autowired
+    private EmailService emailService;
 
     private final RestTemplate restTemplate = new RestTemplate();
+
     public Controller(NodeRPCConnection rpc) {
         this.proxy = rpc.proxy;
         this.me = proxy.nodeInfo().getLegalIdentities().get(0).getName();
     }
 
-    /** Helpers for filtering the network map cache. */
+    /**
+     * Helpers for filtering the network map cache.
+     */
     public String toDisplayString(X500Name name) {
         return BCStyle.INSTANCE.toString(name);
     }
@@ -154,7 +166,6 @@ public class Controller {
     }
 
 
-
 //    ------------------------------- Owner Property Api...........................
 
     @PostMapping(value = "/add-property", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
@@ -195,8 +206,6 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
-
-
 
 
     @GetMapping(value = "/properties", produces = APPLICATION_JSON_VALUE)
@@ -251,8 +260,6 @@ public class Controller {
     }
 
 
-
-
 //    ------------------------------------ Agent Api -------------------------------------
 
     @PostMapping(value = "/create-agent", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
@@ -279,6 +286,7 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorJson.toString());
         }
     }
+
     @GetMapping(value = "/agents", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<AgentStateDTO>> getAllAgents() {
         try {
@@ -299,8 +307,8 @@ public class Controller {
             UniqueIdentifier ownerId = UniqueIdentifier.Companion.fromString(contractDetails.get("ownerId"));
             UniqueIdentifier agentId = UniqueIdentifier.Companion.fromString(contractDetails.get("agentId"));
             UniqueIdentifier propertyId = UniqueIdentifier.Companion.fromString(contractDetails.get("propertyId"));
-            Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(contractDetails.get("startDate"));
-            Date endDate = new SimpleDateFormat("yyyy-MM-dd").parse(contractDetails.get("endDate"));
+            Date startDate = new SimpleDateFormat("dd/MM/yyyy").parse(contractDetails.get("startDate"));
+            Date endDate = new SimpleDateFormat("dd/MM/yyyy").parse(contractDetails.get("endDate"));
             String contractDetailsString = contractDetails.get("contractDetails"); // JSON or specific format
             String status = contractDetails.get("status");
 
@@ -323,7 +331,8 @@ public class Controller {
         String agentNodeUrl = "http://localhost:8090/agents"; // Replace with the actual agent node URL
         ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
                 agentNodeUrl, HttpMethod.GET, null,
-                new ParameterizedTypeReference<List<Map<String, Object>>>() {}
+                new ParameterizedTypeReference<List<Map<String, Object>>>() {
+                }
         );
 
         if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
@@ -332,8 +341,8 @@ public class Controller {
 
         // Extract the list of agent IDs from the response
         return response.getBody().stream()
-                .map(agentInfo -> (Map<String, Object>)agentInfo.get("linearId"))
-                .map(linearIdMap -> (String)linearIdMap.get("id"))
+                .map(agentInfo -> (Map<String, Object>) agentInfo.get("linearId"))
+                .map(linearIdMap -> (String) linearIdMap.get("id"))
                 .map(UniqueIdentifier.Companion::fromString)
                 .collect(Collectors.toList());
     }
@@ -382,10 +391,6 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
-
-
-
-
 
 
 //    ----------------------------- Owner Login Api----------------------------------------
@@ -467,6 +472,7 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorJson.toString());
         }
     }
+
     private UniqueIdentifier authenticateAgent(String email, String password) {
         try {
             List<StateAndRef<AgentState>> agentStates = proxy.vaultQuery(AgentState.class).getStates();
@@ -536,6 +542,7 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorJson.toString());
         }
     }
+
     @GetMapping(value = "/tenants", produces = "application/json")
     public ResponseEntity<List<TenantStateDTO>> getAllTenants() {
         try {
@@ -678,7 +685,6 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Return an error response
         }
     }
-
 
 
 //    -------------------------------- Maintaince Api -------------------------
@@ -897,7 +903,6 @@ public class Controller {
     }
 
 
-
     @DeleteMapping("/delete-message/{messageId}")
     public ResponseEntity<String> deleteMessage(@PathVariable String messageId) {
         try {
@@ -919,13 +924,192 @@ public class Controller {
         }
     }
 
+            //------------------------- Send mail-----------------
+
+    @PostMapping("/sendEmail")
+    public ResponseEntity<?> sendEmail(@RequestBody EmailRequest request) {
+        emailService.sendEmail(request.getEmail(), "Subject Here", request.getMessage());
+        return ResponseEntity.ok("Email sent successfully");
+    }
+
+
+    @PostMapping("/owner/match")
+    public ResponseEntity<?> findOwnerByEmail(@RequestBody CheckMailRequest request) {
+        String email = request.getEmail();
+        QueryCriteria generalCriteria = new QueryCriteria.VaultQueryCriteria();
+        List<StateAndRef<OwnerState>> ownerStates = proxy.vaultQueryByCriteria(generalCriteria, OwnerState.class).getStates();
+
+        for (StateAndRef<OwnerState> stateRef : ownerStates) {
+            OwnerState state = stateRef.getState().getData();
+            if (email.equalsIgnoreCase(state.getEmail())) {
+                return ResponseEntity.ok(new MatchResponse(state.getLinearId().getId().toString(), "Match found"));
+            }
+        }
+        return ResponseEntity.ok(new MatchResponse("", "No match found"));
+    }
+
+    @GetMapping("/get-otp")
+    public String snedOtp()
+    {
+        return OTPGenerator.generateOTP();
+    }
+
+
+    @PostMapping("/verifyAndSendOTP")
+    public ResponseEntity<?> verifyOwnerAndSendOTP(@RequestBody CheckMailRequest request) {
+        String email = request.getEmail();
+        QueryCriteria generalCriteria = new QueryCriteria.VaultQueryCriteria();
+        List<StateAndRef<OwnerState>> ownerStates = proxy.vaultQueryByCriteria(generalCriteria, OwnerState.class).getStates();
+
+        for (StateAndRef<OwnerState> stateRef : ownerStates) {
+            OwnerState state = stateRef.getState().getData();
+            if (email.equalsIgnoreCase(state.getEmail())) {
+                // OTP generation
+                String otp = OTPGenerator.generateOTP();
+
+                // Store OTP associated with the email
+                otpStorage.put(email, otp);
+
+                // Send email with OTP
+                String emailMessage = String.format("Your OTP is: %s", otp);
+                emailService.sendEmail(email, "Your OTP", emailMessage);
+
+                // Return the user ID with a success message
+                return ResponseEntity.ok(new MatchResponse(state.getLinearId().getId().toString(), "OTP sent successfully"));
+            }
+        }
+
+        // If the email does not exist, return a generic response
+        return ResponseEntity.ok(new MatchResponse("", "Email not found"));
+    }
+
+    public void storeOTP(String email, String otp) {
+        otpStorage.put(email, otp);
+    }
+
+    @PostMapping("/validateOTP")
+    public ResponseEntity<?> validateOTP(@RequestBody OTPValidationRequest request) {
+        String email = request.getEmail();
+        String otp = request.getOtp();
+
+        // Check if the OTP matches the one stored for the given email
+        if (otp.equals(otpStorage.get(email))) {
+            // If match, clear the OTP from storage to prevent reuse and return success response
+            otpStorage.remove(email);
+            return ResponseEntity.ok("OTP validated successfully");
+        } else {
+            // If no match, return error message
+            return ResponseEntity.badRequest().body("Invalid OTP or email");
+        }
+    }
+
+    @PostMapping("/verifyAndSendOTPAgent")
+    public ResponseEntity<?> verifyAgentAndSendOTP(@RequestBody CheckMailRequest request) {
+        String email = request.getEmail();
+        QueryCriteria generalCriteria = new QueryCriteria.VaultQueryCriteria();
+        List<StateAndRef<AgentState>> agentStates = proxy.vaultQueryByCriteria(generalCriteria, AgentState.class).getStates();
+
+        for (StateAndRef<AgentState> stateRef : agentStates) {
+            AgentState state = stateRef.getState().getData();
+            if (email.equalsIgnoreCase(state.getEmail())) {
+                // OTP generation
+                String otp = OTPGenerator.generateOTP();
+
+                // Store OTP associated with the email
+                otpStorage.put(email, otp);
+
+                // Send email with OTP
+                String emailMessage = String.format("Your OTP is: %s", otp);
+                emailService.sendEmail(email, "Your OTP", emailMessage);
+
+                // Return the agent ID with a success message
+                return ResponseEntity.ok(new MatchResponse(state.getLinearId().getId().toString(), "OTP sent successfully"));
+            }
+        }
+
+        // If the email does not exist, return a generic response
+        return ResponseEntity.ok(new MatchResponse("", "Email not found"));
+    }
 
 
 
+    @PostMapping("/verifyAndSendOTPTenant")
+    public ResponseEntity<?> verifyTenantAndSendOTP(@RequestBody CheckMailRequest request) {
+        String email = request.getEmail();
+        QueryCriteria generalCriteria = new QueryCriteria.VaultQueryCriteria();
+        List<StateAndRef<TenantState>> tenantStates = proxy.vaultQueryByCriteria(generalCriteria, TenantState.class).getStates();
+
+        for (StateAndRef<TenantState> stateRef : tenantStates) {
+            TenantState state = stateRef.getState().getData();
+            if (email.equalsIgnoreCase(state.getEmail())) {
+                // OTP generation
+                String otp = OTPGenerator.generateOTP();
+
+                // Store OTP associated with the email
+                otpStorage.put(email, otp);
+
+                // Send email with OTP
+                String emailMessage = String.format("Your OTP is: %s", otp);
+                emailService.sendEmail(email, "Your OTP", emailMessage);
+
+                // Return the tenant ID with a success message
+                return ResponseEntity.ok(new MatchResponse(state.getLinearId().getId().toString(), "OTP sent successfully"));
+            }
+        }
+
+        // If the email does not exist, return a generic response
+        return ResponseEntity.ok(new MatchResponse("", "Email not found"));
+    }
+
+
+//    ------------------------------ Agent tenant contrcat----------------------
+
+
+    @PostMapping(value = "/create-tenant-agent-property-contract", produces = "application/json", consumes = "application/json")
+    public ResponseEntity<String> createTenantAgentPropertyContract(@RequestBody Map<String, String> contractDetails) {
+        try {
+            UniqueIdentifier tenantId = UniqueIdentifier.Companion.fromString(contractDetails.get("tenantId"));
+            UniqueIdentifier agentId = UniqueIdentifier.Companion.fromString(contractDetails.get("agentId"));
+            UniqueIdentifier propertyId = UniqueIdentifier.Companion.fromString(contractDetails.get("propertyId"));
+            Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(contractDetails.get("startDate"));
+            Date endDate = new SimpleDateFormat("yyyy-MM-dd").parse(contractDetails.get("endDate"));
+            String contractDetailsString = contractDetails.get("contractDetails"); // JSON or specific format
+            String status = contractDetails.get("status");
+
+            // Fetch the list of valid agent IDs
+            List<UniqueIdentifier> validAgentIds = fetchValidTenantIds();
+
+            UniqueIdentifier id = proxy.startTrackedFlowDynamic(
+                    CreateTenantAgentPropertyContractFlow.class, tenantId, agentId, propertyId,
+                    startDate, endDate, contractDetailsString, status, validAgentIds
+            ).getReturnValue().get();
+
+            return ResponseEntity.status(HttpStatus.CREATED).body("Tenant-Agent-Property Contract created with ID: " + id.toString());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error creating contract: " + e.getMessage());
+        }
+    }
+
+    private List<UniqueIdentifier> fetchValidTenantIds() throws Exception {
+        String agentNodeUrl = "http://localhost:8010/tenants"; // Replace with the actual agent node URL
+        ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
+                agentNodeUrl, HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<Map<String, Object>>>() {
+                }
+        );
+
+        if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+            throw new Exception("Failed to fetch agent IDs from agent node");
+        }
+
+        // Extract the list of agent IDs from the response
+        return response.getBody().stream()
+                .map(agentInfo -> (Map<String, Object>) agentInfo.get("linearId"))
+                .map(linearIdMap -> (String) linearIdMap.get("id"))
+                .map(UniqueIdentifier.Companion::fromString)
+                .collect(Collectors.toList());
+    }
 }
-
-
-
 
 
 

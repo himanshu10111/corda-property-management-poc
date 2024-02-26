@@ -20,6 +20,7 @@ dependencies {
 
     implementation 'org.springframework.security:spring-security-crypto:5.7.0' // Use the latest version available
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
+    implementation 'com.sun.mail:javax.mail:1.6.2'
 
 
     // CorDapp dependencies.
