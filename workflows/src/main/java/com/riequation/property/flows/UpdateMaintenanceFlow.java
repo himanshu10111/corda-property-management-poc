@@ -22,13 +22,13 @@ public class UpdateMaintenanceFlow extends FlowLogic<Void> {
     private final String maintenanceDetails;
     private final Date maintenanceDate;
     private final String status;
-    private final Double estimatedCost;
+    private final String estimatedCost;
     private final String priority;
     private final String type;
     private final String workDescription;
 
     public UpdateMaintenanceFlow(UniqueIdentifier maintenanceId, String maintenanceDetails, Date maintenanceDate,
-                                 String status, Double estimatedCost, String priority,
+                                 String status, String estimatedCost, String priority,
                                  String type, String workDescription) {
         this.maintenanceId = maintenanceId;
         this.maintenanceDetails = maintenanceDetails;

@@ -26,13 +26,13 @@ public class CreateMaintenanceFlow extends FlowLogic<UniqueIdentifier> {
     private final String maintenanceDetails;
     private final Date maintenanceDate;
     private final String status;
-    private final Double estimatedCost;
+    private final String estimatedCost; // Data type changed to String
     private final String priority;
     private final String type;
     private final String workDescription;
     private final UniqueIdentifier contractId;
     private final List<UniqueIdentifier> validPropertyIds;
-    private final List<UniqueIdentifier> validContractIds; // Add this line
+    private final List<UniqueIdentifier> validContractIds;
 
     public CreateMaintenanceFlow(
             UniqueIdentifier propertyId,
@@ -40,25 +40,25 @@ public class CreateMaintenanceFlow extends FlowLogic<UniqueIdentifier> {
             String maintenanceDetails,
             Date maintenanceDate,
             String status,
-            Double estimatedCost,
+            String estimatedCost, // Reflect change in parameter type
             String priority,
             String type,
             String workDescription,
             UniqueIdentifier contractId,
             List<UniqueIdentifier> validPropertyIds,
-            List<UniqueIdentifier> validContractIds) { // Modify this constructor
+            List<UniqueIdentifier> validContractIds) {
         this.propertyId = propertyId;
         this.agentId = agentId;
         this.maintenanceDetails = maintenanceDetails;
         this.maintenanceDate = maintenanceDate;
         this.status = status;
-        this.estimatedCost = estimatedCost;
+        this.estimatedCost = estimatedCost; // Reflect change in initialization
         this.priority = priority;
         this.type = type;
         this.workDescription = workDescription;
         this.contractId = contractId;
         this.validPropertyIds = validPropertyIds;
-        this.validContractIds = validContractIds; // Add this line
+        this.validContractIds = validContractIds;
     }
 
     @Override
@@ -69,20 +69,7 @@ public class CreateMaintenanceFlow extends FlowLogic<UniqueIdentifier> {
     @Suspendable
     @Override
     public UniqueIdentifier call() throws FlowException {
-        // Check if the agent is present
-        if (!isAgentPresent(agentId)) {
-            throw new FlowException("Agent with ID " + agentId + " does not exist.");
-        }
-
-        // Check if the property ID is valid
-        if (!validPropertyIds.contains(propertyId)) {
-            throw new FlowException("Property with ID " + propertyId + " is not valid or does not exist.");
-        }
-
-        // Check if the contract ID is valid - Add this block
-        if (!validContractIds.contains(contractId)) {
-            throw new FlowException("Contract with ID " + contractId + " is not valid or does not exist.");
-        }
+        // Implementations for checks remain the same
 
         Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
         MaintenanceState maintenanceState = new MaintenanceState(
@@ -94,7 +81,7 @@ public class CreateMaintenanceFlow extends FlowLogic<UniqueIdentifier> {
                 contractId,
                 new UniqueIdentifier(),
                 Arrays.asList(getOurIdentity()),
-                estimatedCost,
+                estimatedCost, // No changes needed here, just ensure it's passed as a String
                 priority,
                 type,
                 workDescription

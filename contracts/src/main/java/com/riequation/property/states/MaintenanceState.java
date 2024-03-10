@@ -18,7 +18,8 @@ public class MaintenanceState implements LinearState {
     private final UniqueIdentifier contractId; // Link to the OwnerAgentPropertyContractState
     private final UniqueIdentifier linearId;
     private final List<AbstractParty> participants;
-    private final Double estimatedCost;
+
+    private final String estimatedCost; // Change the type here
     private final String priority; // e.g., Low, Medium, High
     private final String type; // e.g., Electrical, Plumbing, HVAC
     private final String workDescription;
@@ -26,7 +27,7 @@ public class MaintenanceState implements LinearState {
     public MaintenanceState(UniqueIdentifier propertyId, UniqueIdentifier agentId, String maintenanceDetails,
                             Date maintenanceDate, String status, UniqueIdentifier contractId,
                             UniqueIdentifier linearId, List<AbstractParty> participants,
-                            Double estimatedCost, String priority, String type, String workDescription) {
+                            String estimatedCost, String priority, String type, String workDescription) {
         this.propertyId = propertyId;
         this.agentId = agentId;
         this.maintenanceDetails = maintenanceDetails;
@@ -80,7 +81,7 @@ public class MaintenanceState implements LinearState {
         return workDescription;
     }
 
-    public Double getEstimatedCost() {
+    public String getEstimatedCost() {
         return estimatedCost;
     }
 

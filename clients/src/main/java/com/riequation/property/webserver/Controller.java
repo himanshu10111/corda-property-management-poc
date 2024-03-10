@@ -711,7 +711,7 @@ public class Controller {
             String details = (String) maintenanceDetails.get("details");
             Date maintenanceDate = Date.from(Instant.parse((String) maintenanceDetails.get("maintenanceDate")));
             String status = (String) maintenanceDetails.get("status");
-            Double estimatedCost = ((BigDecimal) maintenanceDetails.get("estimatedCost")).doubleValue();
+            String estimatedCost = (String) maintenanceDetails.get("estimatedCost"); // Directly retrieve as String
             String priority = (String) maintenanceDetails.get("priority");
             String type = (String) maintenanceDetails.get("type");
             String workDescription = (String) maintenanceDetails.get("workDescription");
@@ -803,7 +803,7 @@ public class Controller {
         try {
             proxy.startFlowDynamic(
                             ChangeOwnerPasswordFlow.class,
-                            request.getOwnerId(),
+                            request.getOwnerId(), // UniqueIdentifier for the OwnerState
                             request.getNewPassword(),
                             request.getConfirmPassword())
                     .getReturnValue().get();
@@ -813,6 +813,7 @@ public class Controller {
             return ResponseEntity.badRequest().body("{\"error\":\"" + e.getMessage() + "\"}");
         }
     }
+
 
     @PostMapping(value = "/change-agent-password", produces = "application/json", consumes = "application/json")
     public ResponseEntity<?> changeAgentPassword(@RequestBody AgentPasswordRequest request) {
@@ -1031,6 +1032,22 @@ public class Controller {
         return ResponseEntity.ok(new MatchResponse("", "Email not found"));
     }
 
+    @PostMapping("/validateOTPAgent")
+    public ResponseEntity<?> validateOTPAgent(@RequestBody OTPValidationRequest request) {
+        String email = request.getEmail();
+        String otp = request.getOtp();
+
+        // Check if the OTP matches the one stored for the given email
+        if (otp.equals(otpStorage.get(email))) {
+            // If match, clear the OTP from storage to prevent reuse and return success response
+            otpStorage.remove(email);
+            return ResponseEntity.ok("OTP validated successfully");
+        } else {
+            // If no match, return error message
+            return ResponseEntity.badRequest().body("Invalid OTP or email");
+        }
+    }
+
 
 
     @PostMapping("/verifyAndSendOTPTenant")
@@ -1060,6 +1077,23 @@ public class Controller {
         // If the email does not exist, return a generic response
         return ResponseEntity.ok(new MatchResponse("", "Email not found"));
     }
+
+    @PostMapping("/cls")
+    public ResponseEntity<?> validateOTPTenant(@RequestBody OTPValidationRequest request) {
+        String email = request.getEmail();
+        String otp = request.getOtp();
+
+        // Check if the OTP matches the one stored for the given email
+        if (otp.equals(otpStorage.get(email))) {
+            // If match, clear the OTP from storage to prevent reuse and return success response
+            otpStorage.remove(email);
+            return ResponseEntity.ok("OTP validated successfully");
+        } else {
+            // If no match, return error message
+            return ResponseEntity.badRequest().body("Invalid OTP or email");
+        }
+    }
+
 
 
 //    ------------------------------ Agent tenant contrcat----------------------
